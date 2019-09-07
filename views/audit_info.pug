@@ -1,0 +1,902 @@
+doctype html
+html(lang='pl')
+  head
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1')    
+    link(rel='stylesheet', href='/bootstrap/dist/css/bootstrap.min.css')
+    link(rel='stylesheet', href='/jquery-ui/jquery-ui.min.css')
+    link(rel='stylesheet', href='/stylesheets/style00.css')
+    script(src='/jquery/jquery.js' , type='text/javascript')
+    script(src='/bootstrap/dist/js/bootstrap.min.js', type='text/javascript')
+    script(src='/jquery-ui/jquery-ui.js', type='text/javascript') 
+    script(src='/javascripts/JQUERY_PL.js', type='text/javascript')           
+    script(src='/ko/knockout-latest.js', type='text/javascript')
+    script(src='/js/client.js', type='text/javascript')
+    script(src='/cjs/index.js', type='text/javascript') 
+    script(src='/reload/reload.js')     
+    title Wyniki Audytów Kontroli Jakości    
+  body
+  #ontop
+     btn.btn-primary.btn-lg(href="/AUDIT_RESULTS",title="Przejdź do strony obliczającej wyniki dla konkretnych osób",role="button" ,data-toggle="modal",top= "70px", right= "0px",onclick="window.location.href='http://10.0.1.29:3000/AUDIT_RESULTS'") Mnożnik Jakościowy Szczegóły
+     btn.btn-primary.btn-lg(href="/",role="button",title="Przejdź do strony z wynikami premii dla Obszarów Produkcyjnych" , data-toggle="modal",top= "70px", right= "0px",onclick="window.location.href='http://10.0.1.29:3000/'") Wyniki dla Obszarów
+  h2 Indywidualny Mnożnik Jakościowy  
+  p       
+    |Dane dla miesiąca w formacie (YYYY/MM)    
+    input#datepicker(name='startDate',type='text',value='',readonly='true')
+    button.btn.btn-link.glyphicon.glyphicon-refresh(type='button',aria-label='Right Align',onclick='refr()',title='Odśwież dane')
+  P(title='Indywidualny mnoznik jakościowy obliczany jest na podstawie skumulowanego wyniku kontroli jakości pracy danego pracownika')
+    | Podsumowanie Zbiorcze Wyników i Jakości przeprowadzonych kontroli.    
+  .container
+  ul.nav.nav-tabs
+    li.active
+      a(data-toggle='tab', href='#home',title='Zestawienie statystyk przeprowadzonych kontroli',onclick='checkA()') Kontrolerzy - Statystyki
+       button#A.btn.btn-link.glyphicon.glyphicon-refresh(type='button',aria-label='Right Align',onclick='checkA(true)',title='Odśwież dane')
+       button#A1.btn.btn-link.glyphicon.glyphicon-export(type='button',onclick="TableToExcel('cnt', 'Kontrolerzy_Statystyki')",aria-label='Right Align',title='Exportuj tabelę do Excel') 
+    li
+      a(data-toggle='tab', href='#menu1',onclick='checkB()',title='Kontrole dzienne pracowników - każdy pracownik produkcyjny powinien być skontrolowany min. co 4 godziny pracy') Pracownicy zestawienie ilości kontroli dziennych
+       button#B.btn.btn-link.glyphicon.glyphicon-refresh(type='button',onclick='checkB(true)',aria-label='Right Align',title='Odśwież dane')
+       button#B1.btn.btn-link.glyphicon.glyphicon-export(type='button',onclick="TableToExcel('per', 'Pracownicy_zestawienie')",aria-label='Right Align',title='Exportuj tabelę do Excel') 
+    li
+      a(data-toggle='tab', href='#menu2',onclick='checkC()',title='Osiągnięte wyniki kontroli') Mnożnik jakościowy - Wyniki 
+       button#C.btn.btn-link.glyphicon.glyphicon-refresh(type='button',aria-label='Right Align',onclick='checkC(true)',title='Odśwież dane')
+       button#C1.btn.btn-link.glyphicon.glyphicon-export(type='button',onclick="TableToExcel('lst', 'Pracownicy_Wyniki')",aria-label='Right Align',title='Exportuj tabelę do Excel') 
+  .tab-content
+    #home.tab-pane.fade.in.active
+      h3 Kontrolerzy - Statystyki przeprowadzonych Audytów
+      p(data-bind="html: '<b>Dane dla miesiąca '+ MNTH_Ktrl_s() + '</b>  <i>           /Data obliczeń:' + Ktrl_s_refr() + '</i>'")
+      #cnt 
+        table.table.table-bordered
+         thead.sticky                      
+           tr(data-bind="foreach: cKontrol_stat,style :{'width': Kontrol_witdh() + 'px' }")                                         
+             th(data-bind="style: {'width': $data == 'CNTR_NAME' ? '15%' : '5%'},click: $parent.sortColumn,css: $data == $parent.sortKey() ? $parent.srt() == 1 ? 'asc' : 'desc' : ''",title='Naciśnij aby sortować według kolumny')                   
+               button.btn.btn-link(type='button',aria-label='Left Align',title='Naciśnij dla ustalenia filtru',data-bind="html: $data.replace('_',' '),css: $parent.filtered($data)=='true' ? 'filter' : '',click: $root.openDialog ,clickBubble: false")               
+           tbody(data-bind="foreach: Kontrol_stat,style :{'width': Kontrol_witdh() + 'px' }")
+             tr(title="Naciśnij żeby zobaczyć błędy zapisu kontroli",data-bind="visible: $data.VI, foreach: $parent.cKontrol_stat,css: $data.PROC_BL_KONTR>10 ?'danger':$data.PROC_BL_KONTR>3 ?'warning':$data.PROC_BL_KONTR>1 ? 'info' :$data.PROC_BL_KONTR>0.5 ? 'active':'success',style :{'width': $parent.Kontrol_witdh() + 'px' }")
+              td(data-bind="text: $parent[$data],style: { 'width': $data == 'CNTR_NAME' ? '15%' : '5%'}")          
+    #menu1.tab-pane.fade
+      h3 Zestawienie przeprowadzonych ilości kontroli dziennych
+      p(data-bind="html: '<b>Dane dla miesiąca '+ MNTH_emp_sta() + '</b>  <i>          /Data obliczeń:' + emp_sta_refr() + '</i>'")
+      #per 
+       table.table.table-bordered
+        thead.sticky 
+         tr(data-bind="foreach: EMP_summcNames,style :{'width': EMP_summ_witdh() + 'px' }") 
+          th(data-bind="style: {width: $data == 'emp_name' ? '12%': '7%' },click: $parent.sortColumnB,css: $data == $parent.sortKeyB() ? $parent.srtB() == 1 ? 'asc' : 'desc' : ''",title='Naciśnij aby sortować według kolumny')        
+            button.btn.btn-link(type='button',aria-label='Left Align',title='Naciśnij dla ustalenia filtru',data-bind="text: $data.replace('_',' '),css: $parent.filtered($data)=='true' ? 'filter' : '',click: $root.openDialog ,clickBubble: false")            
+        tbody(data-bind="foreach: EMP_summ_sta,style :{'width': EMP_summ_witdh() + 'px' }")
+         tr(title="Naciśnij żeby zobaczyć Szczegóły",data-bind="visible: $data.vi, foreach: $parent.EMP_summcNames,style :{'width': $parent.EMP_summ_witdh() + 'px' }")
+          td(data-bind="html: $parent[$data],title: $parent[$data].emp_name ,style: { 'background-color':  $parent[$data] == 'OK.' ? 'lightgreen' : $parent[$data] == '' ? 'lightgrey' : $parent[$data].indexOf('Brak') > -1 ? 'coral' : 'white', width: $data == 'emp_name' ? '12%' : '7%'} " )                        
+    #menu2.tab-pane.fade
+      h3 Wyniki mnożnika jakościowego - przegląd
+      p(data-bind="html: '<b>Dane dla miesiąca '+ MNTH_MNTH_con() + '</b>  <i>           /Data obliczeń:' + control_ref() + '</i>'")
+      #lst
+       table.table.table-fixed
+        thead.sticky 
+         tr(data-bind="foreach: cMNTH_control,style :{'width': MNTH_con_witdh() + 'px' }")
+          th(data-bind="style: {width: $data == 'EMP_NAME' ? '5%': '2%' },click: $parent.sortColumnA,css: $data == $parent.sortKeyA() ? $parent.srtA() == 1 ? 'asc' : 'desc' : ''",title='Naciśnij aby sortować według kolumny')
+           button.btn.btn-link(type='button',aria-label='Left Align',title='Naciśnij dla ustalenia filtru',data-bind="text: $data.replace('_',' '),css: $parent.filtered($data)=='true' ? 'filter' : '',click: $root.openDialog ,clickBubble: false")
+        tbody(data-bind="foreach: MNTH_control,style :{'width': MNTH_con_witdh() + 'px' }")
+         tr(title="Naciśnij żeby zobaczyć szczegóły kontroli",data-bind="visible: $data.VI,foreach: $parent.cMNTH_control,css: Class,style :{'width': $parent.MNTH_con_witdh() + 'px' }")
+          td(data-bind="html: $parent[$data] ,style:{width: $data == 'EMP_NAME' ? '5%' : '2%'}")
+    #cModal.modal.fade(tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")
+      .modal-dialog    
+        .modal-content
+           .modal-header
+             span.clos(type="button", data-dismiss="modal", aria-hidden="true",style='color: #aaaaaa;float: right;font-size: 28px;font-weight: bold;float: right;cursor: pointer;') &times;
+             strong(data-bind="html: KOMUNIKAT",style='font-family: Arial, Helvetica, sans-serif;font-size: 20px;text-align: center;')
+           #S.modal-footer 
+            button.btn.glyphicon.glyphicon-refresh(type='button',aria-label='Right Align',onclick='refr(true)',title='Odśwież dane')  
+    #FModal.modal.fade(tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")
+      .modal-dialog    
+         .modal-content
+            .modal-header
+               span.clos(type="button", data-dismiss="modal", aria-hidden="true",style='color: #aaaaaa;float: right;font-size: 28px;font-weight: bold;float: right;cursor: pointer;') &times;
+               strong(data-bind="html: KOMUNIKAT",style='font-family: Arial, Helvetica, sans-serif;font-size: 20px;text-align: center;')
+            .modal-body
+             P#fld(style="{margin:10;padding:10;}",data-bind="text: now_fil,value: now_fil")
+             input#fil(data-bind="value: now_filv")
+            #S.modal-footer 
+               button.btn.glyphicon.glyphicon-ban-circle(type='button',aria-label='Left Align',data-bind="click: $root.remALL",title='Usuń wszystkie filtry')
+               button.btn.glyphicon.glyphicon-remove(type='button',aria-label='Right Align',data-bind="click: $root.remCurr",title='Usuń filtr')
+               button.btn.glyphicon.glyphicon-filter(type='button',aria-label='Right Align',data-bind="click: $root.Appfil",title='Zastosuj filtorwanie')  
+    #Nofing.modal.fade(tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")
+     .modal-dialog-centered(data-bind="style: {height: (width()*0.8) + 'px',width: (modal_witdh()*1.02)*(mod_title().substring(0,1)=='P' ? 1: 0.815) + 'px'}")
+      .modal-content(data-bind="style: {height: (width()*0.78) + 'px',width: (modal_witdh()*1.02)*(mod_title().substring(0,1)=='P' ? 1: 0.66) + 'px'}")
+       .modal-header(data-bind="style: {height: (width()*0.7) + 'px'}")
+           button.close(type="button", data-dismiss="modal", aria-hidden="true") &times;            
+           h4(data-bind="text :mod_title()")            
+           .modal-body
+             p 
+             #ma          
+              table.table.table-bordered
+                thead.sticky 
+                  tr(data-bind="foreach: modal_kol,style :{'width': modal_witdh()*(mod_title().substring(0,1)=='P' ? 1: 0.65) + 'px' }")
+                      th(data-bind="style: {width: $data == 'EMP_NAME' ? '5%': '2%' }")
+                        button.btn.btn-link(type='button',aria-label='Left Align',data-bind="text: $data.replace('_',' ')")
+                tbody(data-bind="foreach: modal,style :{'width': modal_witdh()*(mod_title().substring(0,1)=='P' ? 1: 0.65) + 'px' ,height: (width()*0.55) + 'px'}")
+                  tr(data-bind="foreach: $parent.modal_kol, style :{'width': $parent.modal_witdh()*($parent.mod_title().substring(0,1)=='P' ? 1: 0.65) + 'px' }")
+                      td(data-bind="html: $parent[$data] ,style:{width: $data == 'EMP_NAME' ? '5%' : '2%'}")                                       
+       .modal-footer
+            button.btn.btn-primary.glyphicon.glyphicon-export(type='button',onclick="TableToExcel('ma','Dane_tabeli')",aria-label='Right Align',title='Exportuj tabelę do Excel')
+            button.btn.btn-primary(type="button", data-dismiss="modal") OK 
+               
+  script(type='text/javascript').
+   var modal=0; 
+   var Vis_cont='A';
+      
+    function setInputDate(_id){
+      var _dat = document.querySelector(_id);
+      var hoy = new Date(),                
+      m = hoy.getMonth()+1, 
+      y = hoy.getFullYear(),
+      data;               
+      if(m < 10){
+         m = "0"+m;
+       };  
+     data = y+"/"+m;
+     _dat.value = data;
+     };    
+    $( function() {  
+      $.datepicker.setDefaults($.datepicker.regional['pl']);              
+      $("#datepicker").datepicker({        
+      changeMonth: true,
+      changeYear: true,
+      showButtonPanel: true,
+      minDate: new Date('09/01/2015'),
+      maxDate: new Date(),
+      dateFormat: 'yy/mm',
+      onClose: function(dateText, inst) {
+        var d = document.querySelector("#datepicker");
+        var MNTH=d.value.replace('/','');   
+           $(this).datepicker('setDate', new Date(inst.selectedYear, inst.selectedMonth, 1));  
+           var d = document.querySelector("#datepicker");
+           var NewMNTH=d.value.replace('/',''); 
+           if (NewMNTH!=MNTH) {     
+            calert("Zmieniono zakres dat proszę odświeżyć raport");   
+          }
+      }});
+    });
+    function calert(text) {    
+      viewModel.KOMUNIKAT(text);      
+      $("#cModal").modal("show");
+      if (text!='Zmieniono zakres dat proszę odświeżyć raport')
+      {
+        $("#S").hide();
+      }
+      else {
+        $("#S").show();
+      }
+    }          
+    function get_summ() { 
+      modal=modal+1;        
+      var d = document.querySelector("#datepicker");
+      var MNTH=d.value.replace('/',''); 
+      $.get("/ctrl_info/audit/EMP_summ_sta"+MNTH,function(dat) {           
+        let data;
+        if (sessionStorage.getItem('name')!=null && dat.crypto=='YES') {
+          data=cjson.decrypt(dat.data,viewModel.privekey());
+        } else {
+          data=dat.data;
+        }              
+        if (data.DATA_VALID) {
+          if (data.EMP_NO == "NOT FOUND") {                    
+             calert('not found');
+              modal=modal-1; 
+          } else {
+            var d = new Date();
+            var n = d.toString();
+            for (var i=0;i<data.rkds.length;i++){
+                 data.rkds[i].vi=true;
+                 data.rkds[i].vi=ko.observable(data.rkds[i].vi);
+               }                                      
+             viewModel.valid_emp_sta(data.DATA_VALID).MNTH_emp_sta(data.MNTH).EMP_summ_sta(data.rkds).emp_sta_refr(n).sortKeyA('');
+             modal=modal-1;  
+             if(modal==0){hidePleaseWait();} 
+          }
+        } else {
+         calert ('no data') ; 
+        modal=modal-1; 
+        if(modal==0){hidePleaseWait();} 
+        }            
+      });
+    };    
+    function get_contr() {
+       modal=modal+1;         
+      var d = document.querySelector("#datepicker");
+      var MNTH=d.value.replace('/',''); 
+      $.get("/ctrl_info/audit/Kontrol_stat"+MNTH,function(dat) {         
+        let data;
+        if (sessionStorage.getItem('name')!=null && dat.crypto=='YES') {
+          data=cjson.decrypt(dat.data,viewModel.privekey());
+        } else {
+          data=dat.data;
+        }              
+        if (data.DATA_VALID) {
+          if (data.EMP_NO == "NOT FOUND") {                    
+             calert('not found');
+              modal=modal-1; 
+              if(modal==0){hidePleaseWait();} 
+          } else {
+            var d = new Date();
+            var n = d.toString();
+            for (var i=0;i<data._Ctrls.length;i++){
+                 data._Ctrls[i].VI=true;
+                 data._Ctrls[i].VI=ko.observable(data._Ctrls[i].VI);
+               }                                   
+             viewModel.vali_Ktrl_s(data.DATA_VALID).MNTH_Ktrl_s(data.MNTH).Kontrol_stat(data._Ctrls).Ktrl_s_refr(n).sortKey('');
+              modal=modal-1;
+              if(modal==0){hidePleaseWait();} 
+          }
+        } else {
+         calert ('no data') ; 
+          modal=modal-1; 
+          if(modal==0){hidePleaseWait();} 
+        }            
+      });
+    };
+    function get_mno() {
+       modal=modal+1;          
+      var d = document.querySelector("#datepicker");
+      var MNTH=d.value.replace('/',''); 
+      $.get("/ctrl_info/audit/MNTH_control"+MNTH,function(dat) {
+        let data;
+        if (sessionStorage.getItem('name')!=null && dat.crypto=='YES') {
+          data=cjson.decrypt(dat.data,viewModel.privekey());
+        } else {
+          data=dat.data;
+        }               
+        if (data.DATA_VALID) {
+          if (data.EMP_NO == "NOT FOUND") {                    
+             calert('not found');
+              modal=modal-1; 
+          } else {
+            var d = new Date();
+            var n = d.toString();
+            for (var i=0;i<data._Ctrls.length;i++){
+                 data._Ctrls[i].VI=true;
+                 data._Ctrls[i].VI=ko.observable(data._Ctrls[i].VI);
+               }                                             
+             viewModel.MNTH_MNTH_con(data.MNTH).vali_MNTH_con(data.DATA_VALID).MNTH_control(data._Ctrls).control_ref(n).sortKeyB('');
+              modal=modal-1;
+              if(modal==0){hidePleaseWait();}  
+          }
+        } else {
+         calert ('no data') ; 
+          modal=modal-1;
+          if(modal==0){hidePleaseWait();}  
+        }            
+      });
+    };
+    function showPleaseWait() {
+         var modalLoading = '<div class="modal"; id="pleaseWaitDialog" data-backdrop="static" data-keyboard="false" role="dialog">\
+              <div class="modal-dialog">\
+                <div class="modal-content">\
+                   <div class="modal-header">\
+                       <h4 class="modal-title"> <span class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>      Proszę Czekać...  Pobieram dane ...</h4>\
+                   </div>\
+                <div class="modal-body">\
+                  <div class="progress">\
+                    <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar"\
+                     aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width:100%; height: 40px">\
+                    </div>\
+                 </div>\
+               </div>\
+             </div>\
+          </div>\
+       </div>';
+       if (!$("#pleaseWaitDialog").length){
+         $(document.body).append(modalLoading);
+       }  
+     $("#pleaseWaitDialog").modal("show");
+    }    
+    function hidePleaseWait() {
+        $("#pleaseWaitDialog").modal("hide");
+     }
+    function refr(mhide) {
+       if (mhide)
+       {
+           $("#cModal").modal("hide");
+       }
+       if (Vis_cont=='A') {
+         checkA(true);
+       } else if (Vis_cont=='B') {
+         checkB(true);
+       } else if (Vis_cont=='C') {
+         checkC(true);
+       }
+        
+    } 
+    function checkA (force){
+      Vis_cont='A';
+      $('#A').show();
+      $('#B').hide();
+      $('#C').hide();
+      $('#A1').show();
+      $('#B1').hide();
+      $('#C1').hide();
+      viewModel.dt('A');
+      var d = document.querySelector("#datepicker");
+      var MNTH=d.value.replace('/',''); 
+       if (viewModel.MNTH_Ktrl_s()!=MNTH || force)
+       {
+        showPleaseWait();
+        viewModel.vali_Ktrl_s('').MNTH_Ktrl_s('').Kontrol_stat([]);
+        get_contr();
+      }; 
+     
+    }  
+    function checkB (force){
+      Vis_cont='B';
+      $('#A').hide();
+      $('#B').show();
+      $('#C').hide();
+      $('#A1').hide();
+      $('#B1').show();
+      $('#C1').hide();
+      viewModel.dt('B');
+      var d = document.querySelector("#datepicker");
+      var MNTH=d.value.replace('/',''); 
+       if (viewModel.MNTH_emp_sta()!=MNTH || force)
+       {
+        showPleaseWait();
+        viewModel.valid_emp_sta('').MNTH_emp_sta('').EMP_summ_sta([]);
+        get_summ();
+
+      }; 
+         
+    }
+    function checkC (force){
+      Vis_cont='C';
+      $('#A').hide();
+      $('#B').hide();
+      $('#C').show();
+      $('#A1').hide();
+      $('#B1').hide();
+      $('#C1').show();
+      viewModel.dt('C');
+      var d = document.querySelector("#datepicker");
+      var MNTH=d.value.replace('/',''); 
+       if (viewModel.MNTH_MNTH_con()!=MNTH || force)
+       {
+        showPleaseWait();
+        viewModel.MNTH_MNTH_con('').vali_MNTH_con('').MNTH_control([]);
+        get_mno();       
+      };
+              
+    } 
+    $('#cnt tbody').on('click', 'tr', function(){
+       viewModel.modal([]).mod_title(' '); 
+        if (viewModel.Kontrol_stat()[$(this).index()].L_BLEDNYCH_KONTR == 0)
+        {
+          calert('Brak błędnych kontroli');
+        }
+        else 
+        {               
+          $(this).closest('#cnt tbody').find('tr').not('thead tr').removeClass('selected');    
+          $(this).toggleClass('selected');
+        //  $('tr').not('thead tr').addClass('selected');
+          showPleaseWait(); 
+          var link=viewModel.MNTH_Ktrl_s() + viewModel.Kontrol_stat()[$(this).index()].CNTR_PER;             
+          $.get("/ctrl_info/audit/Lst_ctrl_err" + link,function(dat) {
+            let data;
+            if (sessionStorage.getItem('name')!=null && dat.crypto=='YES') {
+              data=cjson.decrypt(dat.data,viewModel.privekey());
+            } else {
+              data=dat.data;
+            }               
+            if (data.DATA_VALID) {
+              if (data.EMP_NO == "NOT FOUND") {                    
+                calert("Brak zapisanych kontroli : <br\> <i> dla numeru " + link + " <br\ Proszę Odświeżyć dane></i>");
+              } else {                                   
+                viewModel.modal(data._Ctrls).mod_title('Problematyczne kontrole :' + data.CNTR_PER + '  ' + data.CONTROLER_NAME);                
+                hidePleaseWait()
+                $('#Nofing').modal("show");
+              }
+            }
+            else 
+            { 
+              hidePleaseWait()               
+              calert("Wystąpił błąd połączenia :" + data.ERROR);
+            }
+        });
+      }
+     }); 
+    $('#per tbody').on('click', 'tr', function(){
+        viewModel.modal([]).mod_title(' '); 
+        $(this).closest('#per tbody').find('tr').not('thead tr').removeClass('selected');    
+        $(this).toggleClass('selected');
+           showPleaseWait(); 
+           var link=viewModel.MNTH_emp_sta() + viewModel.EMP_summ_sta()[$(this).index()].emp_no;             
+           $.get("/ctrl_info/audit/Emp_Ctrl_sta" + link,function(dat) { 
+             let data;
+             if (sessionStorage.getItem('name')!=null && dat.crypto=='YES') {
+               data=cjson.decrypt(dat.data,viewModel.privekey());
+             } else {
+               data=dat.data;
+             }              
+             if (data.DATA_VALID) {
+               if (data.EMP_NO == "NOT FOUND") {                    
+                 calert("Brak zapisanych kontroli : <br\> <i> dla numeru " + link + " <br\ Proszę Odświeżyć dane></i>");
+               } else {                                   
+                 viewModel.modal(data._Ctrls).mod_title('Obecność Szczegóły :' + data.EMP_NO + ' ' + data.PER_ID + ' ' + data.EMP_NAME);                
+                 hidePleaseWait()
+                 $('#Nofing').modal("show");
+               }
+             }
+             else 
+             { 
+               hidePleaseWait()               
+               calert("Wystąpił błąd połączenia :" + data.ERROR);
+             }
+         });
+       
+      });
+    $('#lst tbody').on('click', 'tr', function(){
+        viewModel.modal([]).mod_title(' '); 
+        $(this).closest('#lst tbody').find('tr').not('thead tr').removeClass('selected');    
+        $(this).toggleClass('selected');
+           showPleaseWait(); 
+           var link=viewModel.MNTH_MNTH_con() + viewModel.MNTH_control()[$(this).index()].EMP_NO;             
+           $.get("/ctrl_info/audit/PER_ctrl_enh" + link,function(dat) {
+             let data;
+             console.log(viewModel.privekey())
+             if (sessionStorage.getItem('name')!=null && dat.crypto=='YES') {
+               data=cjson.decrypt(dat.data,viewModel.privekey());
+             } else {
+               data=dat.data;
+             }               
+             if (data.DATA_VALID) {
+               if (data.EMP_NO == "NOT FOUND") {                    
+                 calert("Brak zapisanych kontroli : <br\> <i> dla numeru " + link + " <br\ Proszę Odświeżyć dane></i>");
+               } else {                                   
+                 viewModel.modal(data.CTRL_REK).mod_title('Przegląd kontroli:' + data.EMP_NO + ' ' + data.EMP_ID + ' ' + data.EMP_NAME + ' Punkty:' + data.PUNKTY + ' Próg:' + data.PROG + ' Premia:'+data.PREMIA);                
+                 hidePleaseWait()
+                 $('#Nofing').modal("show");
+               }
+             }
+             else 
+             { 
+               hidePleaseWait()               
+               calert("Wystąpił błąd połączenia :" + data.ERROR);
+             }
+         });     
+      });
+    var TableToExcel = (function () {
+      var uri = 'data:application/vnd.ms-excel;base64,'
+      , template = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><meta http-equiv="content-type" content="application/vnd.ms-excel; charset=UTF-8"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>{worksheet}</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--></head><body><table cellspacing="0" rules="rows" border="1" style="color:Black;background-color:White;border-color:#CCCCCC;border-width:1px;border-style:None;width:100%;border-collapse:collapse;font-size:9pt;text-align:center;">{table}</table></body></html>'
+      , base64 = function (s) { return window.btoa(unescape(encodeURIComponent(s))) }
+      , format = function (s, c) { return s.replace(/{(\w+)}/g, function (m, p) { return c[p]; }) }
+      return function (table, name) {
+          if (name=='Dane_tabeli') {name=name+': '+viewModel.mod_title();}
+          if (!table.nodeType) table = document.getElementById(table)
+          var ctx = { worksheet: name || 'Worksheet', table: table.innerHTML }
+          var blob = new Blob([format(template, ctx)], { type: 'application/vnd.ms-excel', endings: 'native' });
+          if (navigator.msSaveBlob) {              
+              navigator.msSaveBlob(blob, name + '.xls')
+          } else {
+            url = window.URL.createObjectURL(blob);
+            if (!$("#dwl").length){
+            var b = document.createElement("a");
+            document.body.appendChild(b);
+            b.id="dwl";
+            b.style = "display: none";
+            b.href = url;
+            b.download = name + '.xls';
+            b.click();
+            window.URL.revokeObjectURL(url);
+          } else {
+           var a = document.querySelector("#dwl");         
+           a.style = "display: none";
+           a.href = url;          
+           a.download = name + '.xls';
+           a.click();
+           window.URL.revokeObjectURL(url); 
+         }          
+        }
+      }
+     })()   
+    var vModel = function (){
+      if (sessionStorage.getItem('name')==null) {    
+          clear_storage();
+      }; 
+       var self = this; 
+       self.uuid=ko.observable(sessionStorage.getItem('uuid'));
+       self.privekey=ko.observable(sessionStorage.getItem('privateKey'));
+       self.mod_title=ko.observable(" ")
+       self.modal= ko.observableArray([]);
+       self.width= ko.observable(window.screen.height* window.devicePixelRatio)
+       self.modal_kol = ko.computed(function () {         
+        if (self.modal().length === 0)
+           return [];
+        var props = [];
+        var obj = self.modal()[0];
+        for (var name in obj) {
+           if (name!='VI') {
+            props.push(name);
+          }
+         }  
+         return props;
+       });
+       self.KOMUNIKAT=  ko.observable(" ");     
+       self.EMP_summ_sta= ko.observableArray([]);
+       self.modal_witdh=ko.computed(function () {
+         return (window.screen.width * window.devicePixelRatio)*0.98;
+       }); 
+       self.filterArr=ko.observableArray([]);
+       self.openDialog = function (field) {                     
+           self.KOMUNIKAT('Filtruj pole:' + field + ' według wzorca');
+           self.now_fil(field);
+           k=101;        
+           for(var i=0 ,ii=self.filterArr().length;i<ii;i++) {
+             if(viewModel.filterArr()[i].dta==self.dt()) {             
+               if (self.filterArr()[i].col==field) {               
+                self.now_filv(self.filterArr()[i].val);
+                k=i; 
+               }
+             }             
+           }
+           if (k==101) {
+             self.now_filv('');
+           }                                
+           $('#FModal').modal("show");
+           setTimeout(function (){
+             $('#fil').focus();
+           }, 500);                                
+         }; 
+       self.Appfil= function (){
+           var d = document.querySelector("#fld");
+           var c = document.querySelector("#fil");
+           var k=101;
+           if (c.value=="") {
+             self.remCurr();
+             $('#FModal').modal("hide");
+           } else {
+             for(var i=0 ,ii=self.filterArr().length;i<ii;i++) {
+               if(self.filterArr()[i].dta==self.dt()) {
+                 if (self.filterArr()[i].col==d.value) 
+                 {                 
+                   self.filterArr()[i].val=c.value;
+                   k=i; 
+                 } 
+               }         
+             }
+             if (k==101) {
+               var va={
+                 col:d.value,
+                 dta:self.dt(),
+                 val:c.value 
+               }
+             viewModel.filterArr.push(va);
+             }   
+             $('#FModal').modal("hide"); 
+            this.filterData() ; 
+           }   
+         }
+       self.remALL= function () {
+           var di=[];
+           viewModel.now_filv('');
+           for(var i=0 ,ii=viewModel.filterArr().length;i<ii;i++) {
+             if(viewModel.filterArr()[i].dta!==self.dt()) {
+               var a = {
+                 col:viewModel.filterArr()[i].col,
+                 dta:viewModel.filterArr()[i].dta,
+                 val:viewModel.filterArr()[i].val 
+               }
+               di.push(a);
+             }
+           }              
+           viewModel.filterArr(di);
+           this.filterData() ;
+         }
+       self.remCurr =function () {  
+           var k=101;
+           var d = document.querySelector("#fld"); 
+           for(var i=0 ,ii=viewModel.filterArr().length;i<ii;i++) {
+             if(viewModel.filterArr()[i].dta==self.dt()) {
+               if (viewModel.filterArr()[i].col==d.value) 
+               {
+                 k=i                      
+               }
+             }                
+           }  
+           if (k!=101) {
+             viewModel.filterArr.splice(k, 1);
+             viewModel.now_filv('');
+           } 
+           this.filterData() ;             
+         }
+       self.filtered=function(field){
+          var k=101;                
+           for(var i=0 ,ii=self.filterArr().length;i<ii;i++) {
+            if(self.filterArr()[i].dta==self.dt()) {
+             if (self.filterArr()[i].col==field)
+             {
+               k=i;
+               return 'true';
+             }
+           }
+          }        
+          if (k==101)
+          {
+             return 'false';
+          }             
+        }
+       self.dt=ko.observable("A");              
+       self.now_fil=ko.observable('');
+       self.now_filv=ko.observable('');
+       self.MNTH_emp_sta= ko.observable(" ");
+       self.emp_sta_refr=ko.observable(" ");
+       self.valid_emp_sta= ko.observable(" ");
+       self.EMP_summ_witdh=ko.computed(function () {
+         var obj = self.EMP_summ_sta()[0]
+         var wsp=0;
+         var max=0;
+         for (var name in obj) {
+             wsp=wsp+1;
+             if (name=='_24')
+             {               
+               max=1;
+             }
+           }
+         var wsp =wsp-6;
+         if (max==1) { wsp=wsp+3;}          
+         return (window.screen.width * window.devicePixelRatio)*(0.4+(wsp*0.05));
+       });
+       self.Kontrol_stat= ko.observableArray([]);
+       self.Kontrol_witdh=ko.computed(function () {
+         return (window.screen.width * window.devicePixelRatio)*1.3;
+       });         
+       self.vali_Ktrl_s=ko.observable(" ");
+       self.MNTH_Ktrl_s=ko.observable(" ");
+       self.Ktrl_s_refr=ko.observable(" ");
+       self.MNTH_control= ko.observableArray([]);
+       self.control_ref=ko.observable(" ");       
+       self.vali_MNTH_con=ko.observable(" ");
+       self.MNTH_MNTH_con=ko.observable(" ");
+       self.MNTH_con_witdh=ko.computed(function () {
+         return (window.screen.width * window.devicePixelRatio)*0.9;
+       });
+       self.EMP_summcNames = ko.computed(function () {
+        if (self.EMP_summ_sta().length === 0)
+            return [];
+        var props = [];
+        var obj = self.EMP_summ_sta()[0];
+        var max=0;
+        for (var name in obj) {
+          if (name!='vi') {
+            props.push(name);
+            if (name=='_14')
+            {
+              max=1;
+            }
+          }
+        }
+          if (max==1) {
+            props.push('emp_name');
+            props.push('emp_no');
+          }
+        return props;
+       });
+       self.cKontrol_stat = ko.computed(function () {
+        if (self.Kontrol_stat().length === 0)
+           return [];
+        var props = [];
+        var obj = self.Kontrol_stat()[0];
+        for (var name in obj) {
+           if (name!='VI') {             
+            props.push(name);
+          }
+        }  
+        return props;
+       });
+       self.cMNTH_control = ko.computed(function () {
+        if (self.MNTH_control().length === 0)
+          return [];
+        var props = [];
+        var obj = self.MNTH_control()[0];
+        for (var name in obj)
+          if (name!='Class' && name!='VI') {
+            props.push(name);
+          }                         
+        return props;
+       });       
+      /* Sorting */
+       this.sortKey=ko.observable('');      
+       this.sortOrder=1;        
+       self.srt=ko.observable(self.sortOrder);    
+       this.sortKeyUnwrapped=this.sortKey();
+       self.sortOrderNegative=this.sortOrder*-1;        
+       this.sortColumn=function(heading) {            
+          if (heading==self.sortKey()) {
+           self.sortOrder*=-1;
+           if (self.srt()==1)
+            {
+             self.srt(-1) ; 
+            } 
+            else {              
+              self.srt(1) ;                
+            }          
+          }
+          else {
+           self.sortKey(heading);
+           self.sortOrder=1;
+           self.srt(1);           
+         }                  
+         self.sortKeyUnwrapped=self.sortKey();
+         self.sortOrderNegative=self.sortOrder*-1;
+         self.Kontrol_stat.sort(self.sortByKey);              
+         };
+       this.sortByKey=function(a, b) {
+          a=a[self.sortKeyUnwrapped];
+          b=b[self.sortKeyUnwrapped];  
+         return a === b ? 0 : (a < b ? self.sortOrderNegative : self.sortOrder);
+        };
+       this.sortKeyA=ko.observable('');
+       this.sortOrderA=1;
+       self.srtA=ko.observable(self.sortOrderA);
+       this.sortKeyUnwrappedA=this.sortKeyA();
+       self.sortOrderNegativeA=this.sortOrderA*-1;
+       this.sortColumnA=function(heading) {        
+         if (heading==self.sortKeyA()) {
+          self.sortOrderA*=-1;        
+          if (self.srtA()==1)
+           {
+            self.srtA(-1) ; 
+           } 
+           else {              
+             self.srtA(1) ;                
+           }
+         }
+         else {
+          self.sortKeyA(heading);
+          self.sortOrderA=1;
+          self.srtA(1);   
+        }
+        self.sortKeyUnwrappedA=self.sortKeyA();
+        self.sortOrderNegativeA=self.sortOrderA*-1;
+        self.MNTH_control.sort(self.sortByKeyA);
+        };
+       this.sortByKeyA=function(a, b) {
+       a=a[self.sortKeyUnwrappedA];
+       b=b[self.sortKeyUnwrappedA];  
+      return a === b ? 0 : (a < b ? self.sortOrderNegativeA : self.sortOrderA);
+     };
+       this.sortKeyB=ko.observable('');
+       this.sortOrderB=1;
+       self.srtB=ko.observable(self.sortOrderB); 
+       this.sortKeyUnwrappedB=this.sortKeyB();
+       self.sortOrderNegativeB=this.sortOrderB*-1;
+       this.sortColumnB=function(heading) {        
+      if (heading==self.sortKeyB()) {
+        self.sortOrderB*=-1;
+        if (self.srtB()==1)
+         {
+          self.srtB(-1) ; 
+         } 
+         else {              
+           self.srtB(1) ;                
+         } 
+      }
+       else {
+       self.sortKeyB(heading);
+       self.sortOrderB=1;
+       self.srtB(1); 
+      }
+      self.sortKeyUnwrappedB=self.sortKeyB();
+      self.sortOrderNegativeB=self.sortOrderB*-1;
+      self.EMP_summ_sta.sort(self.sortByKeyB);
+    };
+      this.sortByKeyB=function(a, b) {
+       a=a[self.sortKeyUnwrappedB];
+       b=b[self.sortKeyUnwrappedB];  
+       return a === b ? 0 : (a < b ? self.sortOrderNegativeB : self.sortOrderB);
+      }; 
+      this.filterData=function() {
+        var item,
+        found;        
+        if (self.dt()=='A') {                  
+            for(var j=0, jj=self.Kontrol_stat().length;j<jj;j++) {
+             found=true;
+             item=self.Kontrol_stat()[j];
+             if (self.filterArr().length>0)
+             {
+             for(var i=0 ,ii=self.filterArr().length;i<ii;i++) {
+              if(self.filterArr()[i].dta==self.dt()) {                
+                found=(item[self.filterArr()[i].col].toString().toLowerCase().indexOf(self.filterArr()[i].val.toLowerCase())!=-1)?true:false;
+              }
+              if(!found) {break;   }
+            }}
+            item.VI(found);
+           }                             
+        } else if (self.dt()=='B') {          
+            for(var j=0, jj=self.EMP_summ_sta().length;j<jj;j++) {
+             found=true;
+             item=self.EMP_summ_sta()[j];
+             if (self.filterArr().length>0)
+             {
+             for(var i=0 ,ii=self.filterArr().length;i<ii;i++) {
+              if(self.filterArr()[i].dta==self.dt()) {              
+                found=(item[self.filterArr()[i].col].toString().toLowerCase().indexOf(self.filterArr()[i].val.toLowerCase())!=-1)?true:false;
+              }              
+              if(!found) {break;   }
+            }}
+            item.vi(found);
+           }           
+        } else if (self.dt()=='C') {        
+            for(var j=0, jj=self.MNTH_control().length;j<jj;j++) {
+             found=true;
+             item=self.MNTH_control()[j];
+             if (self.filterArr().length>0)
+             {
+             for(var i=0 ,ii=self.filterArr().length;i<ii;i++) {
+              if(self.filterArr()[i].dta==self.dt()) {                
+                found=(item[self.filterArr()[i].col].toString().toLowerCase().indexOf(self.filterArr()[i].val.toLowerCase())!=-1)?true:false;              
+              }
+              if(!found) {break;   }
+            }}
+            item.VI(found);
+           }                 
+        }       
+      }
+    }; 
+    $( function() {
+      $( document ).tooltip({
+        track: true
+      });          
+    });
+    $("#fil").keypress(function(event) {
+     if (event.which == 13) {
+         viewModel.Appfil();      
+      }
+    });
+    $("#Nofing").keypress(function(event) {
+     if (event.which == 13) {
+        $('#Nofing').modal("hide");      
+      }
+    }); 
+    function clear_storage() {  
+      $.get('/secure/sess_unsign',function(dat) {});
+      window.location.reload();      
+    }
+    var sessionStorage_transfer = function(event) {
+      if(!event) { event = window.event; } // ie suq
+      if(!event.newValue) return;          // do nothing if no value to work with
+      if (event.key == 'getSessionStorage') {
+        // another tab asked for the sessionStorage -> send it
+        localStorage.setItem('sessionStorage', JSON.stringify(sessionStorage));
+        // the other tab should now have it, so we're done with it.
+        localStorage.removeItem('sessionStorage'); // <- could do short timeout as well.
+      } else if (event.key == 'sessionStorage' && !sessionStorage.length) {
+        // another tab sent data <- get it
+        var data = JSON.parse(event.newValue);
+        for (var key in data) {
+          sessionStorage.setItem(key, data[key]);
+        }
+      }                   
+    };
+    // listen for changes to localStorage
+    if(window.addEventListener) {              
+      window.addEventListener("storage", sessionStorage_transfer, false);
+      } else {
+        window.attachEvent("onstorage", sessionStorage_transfer);
+      };
+      // Ask other tabs for session storage (this is ONLY to trigger event)
+      if (!sessionStorage.length) {
+        localStorage.setItem('getSessionStorage', 'foobar');
+        localStorage.removeItem('getSessionStorage', 'foobar');                
+      };     
+      if (sessionStorage.getItem('name')==null) {    
+          clear_storage();
+      } else {
+        setInputDate("#datepicker");
+        var viewModel=new  vModel;          
+        ko.applyBindings(viewModel);
+        checkA();        
+      }
+         
+      
+  
+      
+         
+  
+      
+       

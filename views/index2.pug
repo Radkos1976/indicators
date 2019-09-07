@@ -1,0 +1,1323 @@
+﻿extends layout
+
+block content
+ div
+ .row
+ canvas#canvas3
+ canvas#canvas4
+ canvas#canvas2
+ canvas#canvas
+ canvas#canvas1
+  
+ script(type='text/javascript').
+  function MainViewModel(data) {                
+    let self = this;
+    let ctx =  $("#canvas").get(0).getContext("2d"); 
+    let ctx1 = $("#canvas1").get(0).getContext("2d");
+    let ctx2=  $("#canvas3").get(0).getContext("2d");
+    let ctx3=  $("#canvas4").get(0).getContext("2d");
+    let ctx4=  $("#canvas2").get(0).getContext("2d");            
+    self.loadDataset = function(id,refr,offset) { 
+      let mnth=get_PL_Dat();           
+      $('canvas').css({ 
+          width: '',
+          height: ''
+        });
+      $('canvas1').css({ 
+          width: '',
+          height: ''
+        });
+      $('canvas2').css({ 
+            width: '',
+            height: ''
+        });
+      $('canvas3').css({ 
+          width: '',
+          height: ''
+        });  
+      $('canvas4').css({ 
+            width: '',
+            height: ''
+          }); 
+    if (typeof offset=='undefined') {offset=0};           
+    let w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+    let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;                 
+    let qry=0;
+    qr=IS_one(DEP);
+    if (id==16||id==17||id==18) {
+      if (DEP.substring(0,1)==0) {
+        id=id-15;
+      }
+    };            
+    if (id==4) {
+      $.get("/data13/"+DEP,function(data) {
+        let data;
+        if (sessionStorage.getItem('name')!=null && dat.crypto=='YES') {
+          data=cjson.decrypt(dat.data,privekey);
+        } else {
+          data=dat.data;
+        }
+        if (data.error!="yes") {                                    
+        if (qr==2) {
+          ctx.canvas.width  = 1;
+          ctx.canvas.height = 1;
+          ctx.canvas.style.visibility='hidden';
+          ctx1.canvas.width  = 1;
+          ctx1.canvas.height = 1;
+          ctx1.canvas.style.visibility='hidden';      
+          ctx2.canvas.width  = parseInt(Math.round(w*0.985));
+          ctx2.canvas.height = parseInt(Math.round(h*0.40));
+          ctx2.canvas.style.visibility='visible';                  
+          if (ctx2.tpchart!='Bar')  {
+            ctx2.firstPass=1;                
+            c2 = new Chart(ctx2).Bar(data,get_options(data.title,data.subtitle,"Bar",0,4,0,0,0,data.jedn));
+          } else {
+            deleteHighLight(ctx2,data);
+            updateChart(ctx2,data,get_options(data.title,data.subtitle,"Bar",0,4,0,0,0,data.jedn),refr,refr);
+          };              
+          let dt={
+            labels : data.labels,
+            title : data.title1,
+            subtitle: data.subtitle,
+            datasets :data.datasets1
+          };       
+          ctx3.canvas.width  = parseInt(Math.round(w*0.985));
+          ctx3.canvas.height = parseInt(Math.round(h*0.28));
+          ctx3.canvas.style.visibility='visible';                  
+          if (ctx3.tpchart!='Line')  {
+            ctx3.firstPass=1;
+            c3 = new Chart(ctx3).Line(dt,get_options(data.title1,data.subtitle,"Line",0,3));
+          }   else {
+            deleteHighLight(ctx3,dt);
+            updateChart(ctx3,dt,get_options(data.title1,data.subtitle,"Line",0,3),refr,refr);
+          };                          
+          let dy={
+            labels : data.labels,
+            title : data.title2,
+            subtitle: data.subtitle,
+            datasets :data.datasets2
+          };      
+          ctx4.canvas.width  = parseInt(Math.round(w*0.985));
+          ctx4.canvas.height = parseInt(Math.round(h*0.28));
+          ctx4.canvas.style.visibility='visible';                   
+          if (ctx4.tpchart!='Bar')  {
+            ctx4.firstPass=1;                     
+            c4 = new Chart(ctx4).Bar(dy,get_options(data.title2,data.subtitle,"Bar",0,3));
+          } else {
+            deleteHighLight(ctx4,dy);
+            updateChart(ctx4,dy,get_options(data.title2,data.subtitle,"Bar",0,3),refr,refr);
+          };            
+        } else {
+          if (qr==1) {
+            ctx.canvas.width  = 1;
+            ctx.canvas.height = 1;
+            ctx.canvas.style.visibility='hidden';
+            ctx1.canvas.width  = 1;
+            ctx1.canvas.height = 1;
+            ctx1.canvas.style.visibility='hidden';
+            ctx4.canvas.width  = 1;
+            ctx4.canvas.height = 1;
+            ctx4.canvas.style.visibility='hidden';       
+            ctx2.canvas.width  = parseInt(Math.round(w*0.985));
+            ctx2.canvas.height = parseInt(Math.round(h*0.60));
+            ctx2.canvas.style.visibility='visible';
+            if (ctx2.tpchart!='Bar')  {
+              ctx2.firstPass=1;                
+              c2 = new Chart(ctx2).Bar(data,get_options(data.title,data.subtitle,"Bar",0,4,0,0,0,data.jedn));
+            } else {                                
+              deleteHighLight(ctx2,data);
+              updateChart(ctx2,data,get_options(data.title,data.subtitle,"Bar",0,4,0,0,0,data.jedn),refr,refr);
+            };
+            let dt={
+              labels : data.labels,
+              title : data.title1,
+              subtitle: data.subtitle,
+              datasets :data.datasets1
+            };    
+            ctx3.canvas.width  = parseInt(Math.round(w*0.985));
+            ctx3.canvas.height = parseInt(Math.round(h*0.36));
+            ctx3.canvas.style.visibility='visible';
+            if (ctx3.tpchart!='Line')  {
+              ctx3.firstPass=1;
+              c3 = new Chart(ctx3).Line(dt,get_options(data.title1,data.subtitle,"Line",0,3));
+            }   else {                 
+              deleteHighLight(ctx3,dt);
+              updateChart(ctx3,dt,get_options(data.title1,data.subtitle,"Line",0,3),refr,refr);
+            };
+          } else {
+            if (qr==3) {
+            ctx.canvas.width  = 1;
+            ctx.canvas.height = 1;
+            ctx.canvas.style.visibility='hidden';        
+            ctx2.canvas.width  = parseInt(Math.round(w*0.985));
+            ctx2.canvas.height = parseInt(Math.round(h*0.35));
+            ctx2.canvas.style.visibility='visible';
+            if (ctx2.tpchart!='Bar')  {
+              ctx2.firstPass=1;                
+              c2 = new Chart(ctx2).Bar(data,get_options(data.title,data.subtitle,"Bar",0,4,0,0,0,data.jedn));
+            } else {                                
+              deleteHighLight(ctx2,data);
+              updateChart(ctx2,data,get_options(data.title,data.subtitle,"Bar",0,4,0,0,0,data.jedn),refr,refr);
+            };
+          let dt={
+              labels : data.labels,
+              title : data.title1,
+              subtitle: data.subtitle,
+              datasets :data.datasets1
+            };       
+            ctx3.canvas.width  = parseInt(Math.round(w*0.985));
+            ctx3.canvas.height = parseInt(Math.round(h*0.20));
+            ctx3.canvas.style.visibility='visible';
+            if (ctx3.tpchart!='Line')  {
+              ctx3.firstPass=1;
+              c3 = new Chart(ctx3).Line(dt,get_options(data.title1,data.subtitle,"Line",0,3));
+            }   else {                 
+              deleteHighLight(ctx3,dt);
+              updateChart(ctx3,dt,get_options(data.title1,data.subtitle,"Line",0,3),refr,refr);
+            };                 
+            let dy={
+              labels : data.labels,
+              title : data.title2,
+              subtitle: data.subtitle,
+              datasets :data.datasets2
+            };        
+            ctx4.canvas.width  = parseInt(Math.round(w*0.985));
+            ctx4.canvas.height = parseInt(Math.round(h*0.20));
+            ctx4.canvas.style.visibility='visible'; 
+            if (ctx4.tpchart!='Bar')  {
+              ctx4.firstPass=1;                     
+              c4 = new Chart(ctx4).Bar(dy,get_options(data.title2,data.subtitle,"Bar",0,3));
+            } else {
+              deleteHighLight(ctx4,dy);
+              updateChart(ctx4,dy,get_options(data.title2,data.subtitle,"Bar",0,3),refr,refr);
+            };                
+            let dz={
+              labels : data.labels,
+              title : data.title3,
+              subtitle: data.subtitle,
+              datasets :data.datasets3
+            };       
+            ctx.canvas.width  = parseInt(Math.round(w*0.985));
+            ctx.canvas.height = parseInt(Math.round(h*0.20));
+            ctx.canvas.style.visibility='visible';
+            if (ctx.tpchart!='Line')  {
+              ctx.firstPass=1;                 
+              c0 = new Chart(ctx).Line(dz,get_options(data.title3,data.subtitle,"Line",0,4,0,0,0,'\u2030'));
+            } else {
+              deleteHighLight(ctx,dz);
+              updateChart(ctx,dz,get_options(data.title3,data.subtitle,"Line",0,4,0,0,0,'\u2030'),refr,refr); 
+              };                                       
+            } else {
+              if (qr==4) {
+                ctx2.canvas.width  = parseInt(Math.round(w*0.985));
+                ctx2.canvas.height = parseInt(Math.round(h*0.25));
+                ctx2.canvas.style.visibility='visible';
+                if (ctx2.tpchart!='Bar')  {
+                  ctx2.firstPass=1;                
+                  c2 = new Chart(ctx2).Bar(data,get_options(data.title,data.subtitle,"Bar",0,4,0,0,0,data.jedn));
+                } else {                                
+                  deleteHighLight(ctx2,data);
+                  updateChart(ctx2,data,get_options(data.title,data.subtitle,"Bar",0,4,0,0,0,data.jedn),refr,refr);
+                };
+              let dt={
+                  labels : data.labels,
+                  title : data.title1,
+                  subtitle: data.subtitle,
+                  datasets :data.datasets1
+                };      
+                ctx3.canvas.width  = parseInt(Math.round(w*0.985));
+                ctx3.canvas.height = parseInt(Math.round(h*0.18));
+                ctx3.canvas.style.visibility='visible';
+                if (ctx3.tpchart!='Line')  {
+                  ctx3.firstPass=1;
+                  c3 = new Chart(ctx3).Line(dt,get_options(data.title1,data.subtitle,"Line",0,3));
+                }   else {                 
+                  deleteHighLight(ctx3,dt);
+                  updateChart(ctx3,dt,get_options(data.title1,data.subtitle,"Line",0,3),refr,refr);
+                };                 
+                let dy={
+                  labels : data.labels,
+                  title : data.title2,
+                  subtitle: data.subtitle,
+                  datasets :data.datasets2
+                };     
+                ctx4.canvas.width  = parseInt(Math.round(w*0.985));
+                ctx4.canvas.height = parseInt(Math.round(h*0.18));
+                ctx4.canvas.style.visibility='visible'; 
+                if (ctx4.tpchart!='Bar')  {
+                  ctx4.firstPass=1;                     
+                  c4 = new Chart(ctx4).Bar(dy,get_options(data.title2,data.subtitle,"Bar",0,3));
+                } else {
+                  deleteHighLight(ctx4,dy);
+                  updateChart(ctx4,dy,get_options(data.title2,data.subtitle,"Bar",0,3),refr,refr);
+                };                
+                let dz={
+                  labels : data.labels,
+                  title : data.title3,
+                  subtitle: data.subtitle,
+                  datasets :data.datasets3
+                };                                
+                ctx.canvas.width  = parseInt(Math.round(w*0.985));
+                ctx.canvas.height = parseInt(Math.round(h*0.18));
+                ctx.canvas.style.visibility='visible';
+                if (ctx.tpchart!='Line')  {
+                  ctx.firstPass=1;                 
+                  c0 = new Chart(ctx).Line(dz,get_options(data.title3,data.subtitle,"Line",0,4,0,0,0,'%'));
+                } else {
+                  deleteHighLight(ctx,dz);
+                  updateChart(ctx,dz,get_options(data.title3,data.subtitle,"Line",0,4,0,0,0,'%'),refr,refr); 
+                };
+                let dv={
+                  labels : data.labels,
+                  title : data.title4,
+                  subtitle: data.subtitle,
+                  datasets :data.datasets4
+                };      
+                ctx1.canvas.width  = parseInt(Math.round(w*0.985));
+                ctx1.canvas.height = parseInt(Math.round(h*0.18));
+                ctx1.canvas.style.visibility='visible';
+                if (ctx1.tpchart!='Line')  {
+                  ctx1.firstPass=1;                 
+                  c15 = new Chart(ctx1).Line(dv,get_options(data.title4,data.subtitle,"Line",0,4,0,0,0,'mb'));
+                } else {
+                  deleteHighLight(ctx1,dv);
+                  updateChart(ctx1,dv,get_options(data.title4,data.subtitle,"Line",0,4,0,0,0,'mb'),refr,refr); 
+                };                        
+              }
+            }
+          };
+        };
+      };            
+    });              
+    } else if (id==16||id==17||id==18) {    
+      if (qr==2||qr==1||DEP=='300M0') {
+        let dt1,dt2,dt3,dt4;
+        $.when(                  
+            $.get("/data" + id + "/"+DEP,function(data) {
+              if (sessionStorage.getItem('name')!=null && data.crypto=='YES') {
+                dt1=cjson.decrypt(data.data,privekey);
+              } else {
+                dt1=data.data;
+              } 
+            }),
+            $.get("/data" + (id+4) + "/"+DEP,function(data) {
+              if (sessionStorage.getItem('name')!=null && data.crypto=='YES') {
+                dt2=cjson.decrypt(data.data,privekey);
+              } else {
+                dt2=data.data;
+              }
+            }),
+            $.get("/data" + (id-11) + "/"+DEP.substring(0,4)+0,function(data) {
+              if (sessionStorage.getItem('name')!=null && data.crypto=='YES') {
+                dt3=cjson.decrypt(data.data,privekey);
+              } else {
+                dt3=data.data;
+              }
+            }),                  
+            $.get("/data13/"+DEP.substring(0,4)+0,function(data) {
+              if (sessionStorage.getItem('name')!=null && data.crypto=='YES') {
+                dt4=cjson.decrypt(data.data,privekey);
+              } else {
+                dt4=data.data;
+              }
+            })
+      ).then(function (){
+        let vld = false;
+         if (dt1 && dt2 && dt3) {
+           if (dt1.error!="yes" && dt2.error!="yes" && dt3.error!="yes" ) {
+             if (DEP.substring(0,1)==3 && id==18 && dt4) {
+               if (dt4.error!="yes"){
+                 vld=true;
+               }
+             } else {
+               vld=true;
+             }
+           }
+         }
+         if (vld) {
+           for (let i=0; i < dt3.datasets[0].data.length; i++) {
+             if (dt3.datasets[0].data[i]==null) {
+               dt3.datasets[0].data[i]=undefined;
+             };
+           };
+           ctx1.canvas.width  = 1;
+           ctx1.canvas.height = 1;
+           ctx1.canvas.style.visibility='hidden';
+           ctx2.canvas.width  = parseInt(Math.round(w*0.985));
+           if (DEP.substring(0,1)==3 && id==18){
+             ctx2.canvas.height = parseInt(Math.round(h*0.25));
+           } else {
+             ctx2.canvas.height = parseInt(Math.round(h*0.40));
+           }                   
+           ctx3.canvas.width  = parseInt(Math.round(w*0.985));
+           if (DEP.substring(0,1)==3 && id==18){
+             ctx3.canvas.height = parseInt(Math.round(h*0.25));
+             } else {
+             ctx3.canvas.height = parseInt(Math.round(h*0.28));
+           };
+           ctx4.canvas.width  = parseInt(Math.round(w*0.985));                    
+           if (DEP.substring(0,1)==3 && id==18) {                     
+             ctx4.canvas.height = parseInt(Math.round(h*0.25));
+           } else {
+             ctx4.canvas.height = parseInt(Math.round(h*0.28));                      
+           };
+           ctx2.canvas.style.visibility='visible';                                       
+           ctx3.canvas.style.visibility='visible'; 
+           ctx4.canvas.style.visibility='visible';
+           if (ctx2.tpchart!='Line')  {
+             ctx2.firstPass=1;                
+             c2 = new Chart(ctx2).Line(dt1,get_options(dt1.title,dt1.subtitle,"Line",0,4,0,0,0,'%'));
+           } else {
+             deleteHighLight(ctx2,dt1);
+             updateChart(ctx2,dt1,get_options(dt1.title,dt1.subtitle,"Line",0,4,0,0,0,'%'),refr,refr);
+           };
+           if (ctx3.tpchart!='Bar')  {
+             ctx3.firstPass=1;
+             c3 = new Chart(ctx3).Bar(dt2,get_options(dt2.title,dt2.subtitle,"Bar",0,4,0,0,0,'%'));
+           }  else {
+             deleteHighLight(ctx3,dt2);
+             updateChart(ctx3,dt2,get_options(dt2.title,dt2.subtitle,"Bar",0,4,0,0,0,'%'),refr,refr);
+           };
+           if (ctx4.tpchart!='Bar')  {
+             ctx4.firstPass=1;                     
+             c4 = new Chart(ctx4).Bar(dt3,get_options(dt3.title,dt3.subtitle,"Bar",0,4,0,0,0,'%'));
+           } else {
+             deleteHighLight(ctx4,dt3);
+             updateChart(ctx4,dt3,get_options(dt3.title,dt3.subtitle,"Bar",0,4,0,0,0,'%'),refr,refr);                     
+           };                   
+           if (DEP.substring(0,1)==3 && id==18) {                    
+             ctx.canvas.width  = parseInt(Math.round(w*0.985));
+             ctx.canvas.height = parseInt(Math.round(h*0.20));
+             ctx.canvas.style.visibility='visible'; 
+             let dz={
+               labels : dt4.labels,
+               title : dt4.title3,
+               subtitle: dt4.subtitle,
+               datasets :dt4.datasets3
+             };
+             if (ctx.tpchart!='Line')  {
+               ctx.firstPass=1;                 
+               c0 = new Chart(ctx).Line(dz,get_options(dt4.title3,dt4.subtitle,"Line",0,4,0,0,0,'\u2030'));
+             } else {
+               deleteHighLight(ctx,dz);
+               updateChart(ctx,dz,get_options(dt4.title3,dt4.subtitle,"Line",0,4,0,0,0,'\u2030'),refr,refr); 
+             };                      
+           } else {
+             ctx.canvas.width  = 1;
+             ctx.canvas.height = 1;
+             ctx.canvas.style.visibility='hidden';
+           }
+         }               
+        });                                                    
+    } else {
+      let dt1,dt2,dt3
+      $.when(
+          $.get("/data" + id +"/"+DEP,function(data) {
+            if (sessionStorage.getItem('name')!=null && data.crypto=='YES') {
+              dt1=cjson.decrypt(data.data,privekey);
+            } else {
+              dt1=data.data;
+            }
+          }),
+          $.get("/data" + (id-11) +"/"+DEP,function(data) {
+            if (sessionStorage.getItem('name')!=null && data.crypto=='YES') {
+              dt2=cjson.decrypt(data.data,privekey);
+            } else {
+              dt2=data.data;
+            }
+          }),
+          $.get("/data13/"+DEP,function(data) {
+            if (sessionStorage.getItem('name')!=null && data.crypto=='YES') {
+              dt3=cjson.decrypt(data.data,privekey);
+            } else {
+              dt3=data.data;
+            }
+          })                  
+      ).then(function (){
+        let vld = false;
+         if (dt1 && dt2 && dt3) {
+           if (dt1.error!="yes" && dt2.error!="yes" && dt3.error!="yes" ) {                     
+               vld=true;          
+           }
+         }
+         if (vld) {
+           for (let i=0; i < dt2.datasets[0].data.length; i++) {
+             if (dt2.datasets[0].data[i]==null) {
+               dt2.datasets[0].data[i]=undefined;
+             };
+           }; 
+           ctx.canvas.width  = 1;
+           ctx.canvas.height = 1;
+           ctx.canvas.style.visibility='hidden';
+           ctx1.canvas.width  = 1;
+           ctx1.canvas.height = 1;
+           ctx1.canvas.style.visibility='hidden';
+           ctx2.canvas.width  = parseInt(Math.round(w*0.985));
+           if (id==18){
+             ctx2.canvas.height = parseInt(Math.round(h*0.35));
+           } else {
+             ctx2.canvas.height = parseInt(Math.round(h*0.46));
+           }                  
+           ctx3.canvas.width  = parseInt(Math.round(w*0.985));
+           if (id==18) {
+             ctx3.canvas.height = parseInt(Math.round(h*0.35));
+           } else {
+             ctx3.canvas.height = parseInt(Math.round(h*0.46));
+           };
+           ctx2.canvas.style.visibility='visible';    
+           ctx3.canvas.style.visibility='visible';                 
+           if (id==18) {
+             ctx4.canvas.width  = parseInt(Math.round(w*0.985));
+             ctx4.canvas.height = parseInt(Math.round(h*0.25));
+             ctx4.canvas.style.visibility='visible';
+             let dz={
+               labels : dt3.labels,
+               title : dt3.title3,
+               subtitle: dt3.subtitle,
+               datasets :dt3.datasets3
+             };
+             if (ctx4.tpchart!='Line')  {
+               ctx4.firstPass=1;                 
+               c4 = new Chart(ctx4).Line(dz,get_options(dt3.title3,dt3.subtitle,"Line",0,4,0,0,0,'\u2030'));
+             } else {
+               deleteHighLight(ctx4,dz);
+               updateChart(ctx4,dz,get_options(dt3.title3,dt3.subtitle,"Line",0,4,0,0,0,'\u2030'),refr,refr); 
+             };  
+           } else {
+           ctx4.canvas.width  = 1;
+           ctx4.canvas.height = 1;
+           ctx4.canvas.style.visibility='hidden';
+          }
+          if (ctx2.tpchart!='Line')  {
+            ctx2.firstPass=1;                
+            c2 = new Chart(ctx2).Line(dt1,get_options(dt1.title,dt1.subtitle,"Line",0,4,0,0,0,'%'));
+          } else {
+            deleteHighLight(ctx2,dt1);
+            updateChart(ctx2,dt1,get_options(dt1.title,dt1.subtitle,"Line",0,4,0,0,0,'%'),refr,refr);
+          };
+          if (ctx3.tpchart!='Bar')  {
+            ctx3.firstPass=1;                     
+            c3 = new Chart(ctx3).Bar(dt2,get_options(dt2.title,dt2.subtitle,"Bar",0,4,0,0,0,'%'));
+          } else {
+            deleteHighLight(ctx3,dt2);
+            updateChart(ctx3,dt2,get_options(dt2.title,dt2.subtitle,"Bar",0,4,0,0,0,'%'),refr,refr);
+          };
+        }
+      })            
+    }
+  } else if (id==0) {
+    let wyniki,dta;
+    $.when(
+      $.get("/data12/"+DEP,function(data) {
+        if (sessionStorage.getItem('name')!=null && data.crypto=='YES') {
+          wyniki=cjson.decrypt(data.data,privekey);
+        } else {
+          wyniki=data.data;
+        } 
+      }),           
+      $.get("/data4/"+DEP, function(data) {
+        if (sessionStorage.getItem('name')!=null && data.crypto=='YES') {
+          dta=cjson.decrypt(data.data,privekey);
+        } else { 
+          dta=data.data;
+        }
+      })
+    ).then(function (){
+      ctx.canvas.width  = 1;
+      ctx.canvas.height = 1;
+      ctx.canvas.style.visibility='hidden';
+      ctx2.canvas.width  = 1;
+      ctx2.canvas.height = 1 ;
+      ctx2.canvas.style.visibility='hidden';
+      ctx3.canvas.width  = 1;
+      ctx3.canvas.height = 1 ;
+      ctx3.canvas.style.visibility='hidden';
+      ctx4.canvas.width  = 1;
+      ctx4.canvas.height = 1 ;
+      ctx4.canvas.style.visibility='hidden';
+      $('canvas').css({ 
+          width: '',
+          height: ''
+        });                
+      if (c0!=null) {c0.completed=true};
+      if (c1!=null) {c1.completed=true};
+      if (c2!=null) {c2.completed=true};
+      if (c3!=null) {c3.completed=true};
+      if (c4!=null) {c4.completed=true};
+      ctx1.canvas.width  = parseInt(Math.round(w*0.985));
+      ctx1.canvas.height = parseInt(Math.round(h*0.985));
+      ctx1.canvas.style.visibility='visible';
+      let wyn=[],s,q,opt;
+      wyn.push(0);
+      ctx1.font=parseInt(Math.round(h*0.985*100/(16+qr)*0.01)) +'px Arial';
+      let m=0;
+      for (let i=0; i < dta.table[1].length; i++) {
+        if (dta.table[dta.table.length-1][i]==wyniki.Wyd) {
+          m=i;
+          };
+        if (dta.table[1][i]==null) {
+            dta.table[1].splice(i,dta.table[1].length-i);
+          } else {
+          dta.table[1][i]=dta.table[1][i]+'%';
+          };                               
+        };
+      wyn.push(m);
+      if (qr>1) {
+      m=0;
+      for (let i=0; i < dta.table[2].length; i++) {
+        if (dta.table[dta.table.length-1][i]==wyniki.five_S) {
+          m=i;
+          };
+          if (dta.table[2][i]==null) {
+              dta.table[2].splice(i,dta.table[2].length-i);
+            } else {                  
+        dta.table[2][i]=dta.table[2][i]+'%';
+          };
+        };
+      wyn.push(m);
+      };
+      m=0;
+      if (qr==1) {
+        s=2;
+        q=wyniki.value;
+      } else {
+        s=3;
+        if (qr==2 ) {
+          q=wyniki.value;
+        } else {
+          q=wyniki.p_BRAK;
+        }
+      }
+      for (let i=0; i < dta.table[s].length; i++) {
+        if (dta.table[dta.table.length-1][i]<=q) {
+          m=i;
+          };
+          if (qr==3) {
+            if (DEP!='100K3'){
+              dta.table[s][i]=dta.table[s][i]+'\u2030';
+            } else {
+              dta.table[s][i]=dta.table[s][i]+' ';
+            }  
+          } else {
+            dta.table[s][i]=dta.table[s][i]+wyniki.jedn;
+          }                                 
+        };
+      wyn.push(m);
+      if (qr>2) {
+      m=0;
+      if (qr==3) {
+        q=wyniki.value;
+        jed='%';
+      } else {
+        q=wyniki.p_wyd_MB;
+        jed='mb';
+      }
+      for (let i=0; i < dta.table[4].length; i++) {
+        if (dta.table[dta.table.length-1][i]<=q) {
+          m=i;
+          };
+          if (dta.table[4][i]==null) {
+              dta.table[4].splice(i,dta.table[4].length-i);
+            } else {                  
+        dta.table[4][i]=dta.table[4][i]+jed;
+          };
+        };
+      wyn.push(m);
+      };
+      if (qr>3) {
+      m=0;
+      for (let i=0; i < dta.table[5].length; i++) {
+        if (dta.table[dta.table.length-1][i]<=wyniki.value) {
+          m=i;
+          };
+          if (dta.table[5][i]==null) {
+              dta.table[5].splice(i,dta.table[5].length-i);
+            } else {                  
+        dta.table[5][i]=dta.table[5][i]+'%';
+          };
+        };
+      wyn.push(m);
+      }; 
+      let fnt1 = getMetrics("_Wynik_",ctx1.font,ctx1);
+      let fnt2 = getMetrics("Wydajność",ctx1.font,ctx1);
+      if (qr==2) {
+        opt={
+          context : ctx1,
+          table : dta.table,
+          columns : dta.columns,
+          wynik: wyn,
+          width : ctx1.canvas.width,
+          height : ctx1.canvas.height,
+          colwidth : [Math.round(fnt1.width*1.2),Math.round(fnt2.width*1.2),Math.round(fnt2.width*1.2),Math.round(fnt2.width*1.2),Math.round(fnt2.width*1.2)],
+          colheight : Math.round(fnt1.height*0.8),
+          tblFNTSIZ : Math.round(fnt1.height*0.7),
+          headfntSIZ : Math.round(fnt1.height*0.8),
+          waga : dta.waga,
+          jedn : wyniki.jedn,
+          wyniki : ['Wynik',wyniki.wydajnosc + '%',wyniki.s + '%',wyniki.value + wyniki.jedn],
+          title : dta.title,
+          subtitle : wyniki.subtitle,
+          fonttitle : 'bold '+ parseInt(Math.round(fnt1.height)) + 'px Arial',
+          fontsubtitle :'italic '+ parseInt(Math.round(fnt1.height*0.7))+ 'px Arial',
+        };
+      } else {
+      if (qr==1) {
+        opt={
+          context : ctx1,
+          table : dta.table,
+          columns : dta.columns,
+          wynik: wyn,
+          width : ctx1.canvas.width,
+          height : ctx1.canvas.height,
+          colwidth : [Math.round(fnt1.width*1.2),Math.round(fnt2.width*1.2),Math.round(fnt2.width*1.2),Math.round(fnt2.width*1.2)],
+          colheight : Math.round(fnt1.height*0.8),
+          tblFNTSIZ : Math.round(fnt1.height*0.7),
+          headfntSIZ : Math.round(fnt1.height*0.8),
+          waga : dta.waga,
+          jedn : wyniki.jedn,
+          wyniki : ['Wynik',wyniki.wydajnosc + '%',wyniki.value + wyniki.jedn],
+          title : dta.title,
+          subtitle : wyniki.subtitle,
+          fonttitle : 'bold '+ parseInt(Math.round(fnt1.height)) + 'px Arial',
+          fontsubtitle :'italic '+ parseInt(Math.round(fnt1.height*0.7))+ 'px Arial',
+        };
+      } else {
+        if (qr==3) {
+          if (DEP!='100K3'){
+            opt={
+              context : ctx1,
+              table : dta.table,
+              columns : dta.columns,
+              wynik: wyn,
+              width : ctx1.canvas.width,
+              height : ctx1.canvas.height,
+              colwidth : [Math.round(fnt1.width*1.2),Math.round(fnt2.width*1.2),Math.round(fnt2.width*1.2),Math.round(fnt2.width*1.2),Math.round(fnt2.width*1.2)],
+              colheight : Math.round(fnt1.height*0.8),
+              tblFNTSIZ : Math.round(fnt1.height*0.7),
+              headfntSIZ : Math.round(fnt1.height*0.8),
+              waga : dta.waga,
+              jedn : wyniki.jedn,
+              wyniki : ['Wynik',wyniki.wydajnosc + '%',wyniki.s + '%',wyniki.braki + '\u2030',wyniki.value + wyniki.jedn],
+              title : dta.title,
+              subtitle : wyniki.subtitle,
+              fonttitle : 'bold '+ parseInt(Math.round(fnt1.height)) + 'px Arial',
+              fontsubtitle :'italic '+ parseInt(Math.round(fnt1.height*0.7))+ 'px Arial',
+              };
+          } else {
+            opt={
+              context : ctx1,
+              table : dta.table,
+              columns : dta.columns,
+              wynik: wyn,
+              width : ctx1.canvas.width,
+              height : ctx1.canvas.height,
+              colwidth : [Math.round(fnt1.width*1.2),Math.round(fnt2.width*1.2),Math.round(fnt2.width*1.2),Math.round(fnt2.width*1.2),Math.round(fnt2.width*1.2)],
+              colheight : Math.round(fnt1.height*0.8),
+              tblFNTSIZ : Math.round(fnt1.height*0.7),
+              headfntSIZ : Math.round(fnt1.height*0.8),
+              waga : dta.waga,
+              jedn : wyniki.jedn,
+              wyniki : ['Wynik',wyniki.wydajnosc + '%',wyniki.s + '%',wyniki.braki + ' ',wyniki.value + wyniki.jedn],
+              title : dta.title,
+              subtitle : wyniki.subtitle,
+              fonttitle : 'bold '+ parseInt(Math.round(fnt1.height)) + 'px Arial',
+              fontsubtitle :'italic '+ parseInt(Math.round(fnt1.height*0.7))+ 'px Arial',
+              };
+          } 
+        } else {
+          if (qr==4) {
+          opt={
+            context : ctx1,
+            table : dta.table,
+            columns : dta.columns,
+            wynik: wyn,
+            width : ctx1.canvas.width,
+            height : ctx1.canvas.height,
+            colwidth : [Math.round(fnt1.width*1.3),Math.round(fnt2.width*1.1),Math.round(fnt2.width*1.1),Math.round(fnt2.width*1.1),Math.round(fnt2.width*1),Math.round(fnt2.width*1.1)],
+            colheight : Math.round(fnt1.height*0.8),
+            tblFNTSIZ : Math.round(fnt1.height*0.7),
+            headfntSIZ : Math.round(fnt1.height*0.8),
+            waga : dta.waga,
+            jedn : wyniki.jedn,
+            wyniki : ['Wynik',wyniki.wydajnosc + '%',wyniki.s + '%',wyniki.braki + '%',wyniki.wyd_MB + 'mb',wyniki.value + wyniki.jedn],
+            title : dta.title,
+            subtitle : wyniki.subtitle,
+            fonttitle : 'bold '+ parseInt(Math.round(fnt1.height)) + 'px Arial',
+            fontsubtitle :'italic '+ parseInt(Math.round(fnt1.height*0.7))+ 'px Arial',
+            };
+           }
+         }
+       }
+     }
+     anim=0;
+     let myline=TabANIM(opt); 
+    });          
+  } else {
+    let dt1,dt2,dt3,dt4,dt5
+    $.when(
+      $.get("/data" + id + "/"+DEP,function(data) {
+        if (sessionStorage.getItem('name')!=null && data.crypto=='YES') { 
+          dt1=cjson.decrypt(data.data,privekey);
+        } else {
+          dt1=data.data;
+        }
+      }),
+      $.get("/data" + (id+4) + "/"+DEP, function(data) {
+        if (sessionStorage.getItem('name')!=null && data.crypto=='YES') {
+          dt2=cjson.decrypt(data.data,privekey);
+        } else {
+          dt2=data.data;
+        }
+      }),
+      $.get("/data10/"+DEP, function(data) { 
+        if (sessionStorage.getItem('name')!=null && data.crypto=='YES') {
+          dt3=cjson.decrypt(data.data,privekey);
+        } else {
+          dt3=data.data;
+        } 
+      }),
+      $.get("/data" + (12+offset) + "/" + DEP, function(data) {
+        if (sessionStorage.getItem('name')!=null && data.crypto=='YES') {
+          dt4=cjson.decrypt(data.data,privekey);
+        } else {
+          dt4=data.data;
+        }
+      }),
+      $.get("/data11/"+DEP, function(data) {
+        if (sessionStorage.getItem('name')!=null  && data.crypto=='YES') {
+          dt5=cjson.decrypt(data.data,privekey);
+        } else {
+          dt5=data.data;
+        }
+      })              
+    ).then(function(){
+      qry=1;
+      if (dt2.error!="yes"){
+        for (let i=0; i < dt2.datasets[0].data.length; i++) {
+          if (dt2.datasets[0].data[i]==null) {
+            dt2.datasets[0].data[i]=undefined;
+          };
+        };
+      }
+      ctx.canvas.width  = parseInt(Math.round(w*0.985));
+      if (qr==1 && id>1){
+        ctx.canvas.height = parseInt(Math.round(h*0.60));
+      } else {
+        ctx.canvas.height = parseInt(Math.round(h*0.30));
+      }
+      if (qr==1) {
+        ctx2.canvas.width  = parseInt(Math.round(w*0.492));
+        ctx3.canvas.width  = parseInt(Math.round(w*0.492));
+        ctx4.canvas.width  = 1;
+        ctx4.canvas.height = 1 ;
+        ctx4.canvas.style.visibility='hidden';            
+      } else {
+        ctx2.canvas.width  = parseInt(Math.round(w*0.328));
+        ctx3.canvas.width  = parseInt(Math.round(w*0.328));
+        if (id==1) {
+          ctx4.canvas.width  = parseInt(Math.round(w*0.328));
+          ctx4.canvas.height = parseInt(Math.round(h*0.65));
+          ctx4.canvas.style.visibility='visible';
+        } else {
+          ctx4.canvas.width  = parseInt(Math.round(w*0.328));
+          ctx4.canvas.height = parseInt(Math.round(h*0.35));
+          ctx4.canvas.style.visibility='visible';
+        };
+      }             
+      if (id==1||id>1&&qr==1) {
+        ctx1.canvas.width  = 1;
+        ctx1.canvas.height = 1;
+        ctx1.canvas.style.visibility='hidden'
+      } else {
+        anim=1;
+        ctx1.canvas.width  = parseInt(Math.round(w*0.985));
+        ctx1.canvas.height = parseInt(Math.round(h*0.30));
+        ctx1.canvas.style.visibility='visible';
+      } 
+      if (id==1) {                   
+        ctx2.canvas.height = parseInt(Math.round(h*0.65));
+        ctx2.canvas.style.visibility='visible'; 
+        ctx3.canvas.height = parseInt(Math.round(h*0.65));
+        ctx3.canvas.style.visibility='visible';           
+      } else { 
+        ctx2.canvas.height = parseInt(Math.round(h*0.35));
+        ctx2.canvas.style.visibility='visible';
+        ctx3.canvas.height = parseInt(Math.round(h*0.35));
+        ctx3.canvas.style.visibility='visible';
+      }                          
+      ctx.canvas.style.visibility='visible';              
+      if (ctx.tpchart!='Line')  {
+          ctx.firstPass=1;
+          c0 = new Chart(ctx).Line(dt1,get_options(dt1.title,dt1.subtitle,"Line",0,id));
+      } else {
+          deleteHighLight(ctx,dt1);
+          updateChart(ctx,dt1,get_options(dt1.title,dt1.subtitle,"Line",0,id),refr,refr);
+      };
+      if (dt2.error!="yes") {
+        if (id!=1||id>1&&qr!=1) {
+          if (ctx1.tpchart!='Bar')  {
+            ctx1.firstPass=1;
+            c1 = new Chart(ctx1).Bar(dt2,get_options(dt2.title,dt2.subtitle,"Bar",0,id));
+          } else {
+            deleteHighLight(ctx1,dt2);
+            updateChart(ctx1,dt2,get_options(dt2.title,dt2.subtitle,"Bar",0,id),refr,refr);
+          };
+        } 
+      }
+      if (dt3.error!="yes") {
+        mnth=dt3.Mnt;
+        let options,dat;
+        dat = pop_Don(dt3.color,dt3.value,dt3.jedn);
+        if (mnth!=dt3.Mnt&&qry==1) {
+          options = get_options(dt3.title,dt3.subtitle,"Doughnut",["Poprzedni miesiąc",dt3.value + dt3.jedn],0,[30,0],[50*w/1920-1,48*w/1920-1],["lightgrey","black"]);
+        } else {
+          options = get_options(dt3.title,dt3.subtitle,"Doughnut",[dt3.value + dt3.jedn],0,[0],[48*w/1920-1],["black"]);
+        }
+        if (ctx2.tpchart!='Doughnut')  {
+          ctx2.firstPass=1;
+          c2 = new Chart(ctx2).Doughnut(dat,options);
+        } else {
+          deleteHighLight(ctx2,dat);
+          updateChart(ctx2,dat,options,refr,refr);
+        };
+      };
+      if (dt4.error!="yes"){
+        let options;
+        let dat = pop_Don(dt4.color,dt4.value,dt4.jedn);
+        if (mnth!=dt4.Mnt&&qry==1) {
+          options = get_options(dt4.title,dt4.subtitle,"Doughnut",["Poprzedni miesiąc",dt4.value + dt4.jedn],0,[30,0],[50*w/1920-1,48*w/1920-1],["lightgrey","black"]);
+        } else {
+          options = get_options(dt4.title,dt4.subtitle,"Doughnut",[dt4.value + dt4.jedn],0,[0],[48*w/1920-1],["black"]);
+        };
+        if (ctx3.tpchart!='Doughnut')  {
+          ctx3.firstPass=1;
+          c3 = new Chart(ctx3).Doughnut(dat,options);
+        } else {
+          deleteHighLight(ctx3,dat);
+          updateChart(ctx3,dat,options,refr,refr);
+        };
+      };
+      if (dt5.error!="yes") {
+        let options;
+        let dat = pop_Don(dt5.color,dt5.value,dt5.jedn);
+        if (mnth!=dt5.Mnt&&qry==1) {
+          options = get_options(dt5.title,dt5.subtitle,"Doughnut",["Poprzedni miesiąc",dt5.value + dt5.jedn],0,[30,0],[50*w/1920-1,48*w/1920-1],["BurlyWood","black"]);
+        } else {
+          options = get_options(dt5.title,dt5.subtitle,"Doughnut",[dt5.value + dt5.jedn],0,[0],[48*w/1920-1],["black"]);
+        };
+        if (ctx4.tpchart!='Doughnut')  {
+          ctx4.firstPass=1;
+          c4 = new Chart(ctx4).Doughnut(dat,options); 
+        } else {                
+          deleteHighLight(ctx4,dat);
+          updateChart(ctx4,dat,options,refr,refr);  
+        };
+      }              
+    })
+  };
+
+  };        
+  };          
+  function pop_Don(colMain,alu,jed) {
+      //alu=alu*2;
+        if (jed=='%') { 
+          if (qr==4 && colMain=="rgba(45,212,195,0.4)") {
+          max=2
+          } else {
+          max=100;
+          }
+        } else if (jed=='mb') {
+          max=10;
+        } else if (jed==' ') {
+          max=2;
+        } else if (jed=='\u2030') {
+          max=1.5;
+        } else {
+          max=430;
+          }              
+        if (colMain=="rgba(45,212,195,0.4)" || colMain=="rgba(194,152,44,0.5)") {
+          if(alu <= 0) {
+            if(alu>=max*-1) {
+              let dat = [
+                {
+                  value : max+(alu+max),
+                  color: "rgba(219,220,221,0.6)",
+                  title : "Pozostałe"                
+                },
+                {
+                  value : alu*-1,
+                  color: [colMain],
+                  title : "WYnik do Stu"                
+                }];
+                return dat;
+              } else if (alu>=max*2){
+                let dat = [
+                  {
+                    value : max+(alu+max),
+                    color: "rgba(219,220,221,0.6)",
+                    title : "Pozostałe"                
+                  },
+                  {
+                    value :(alu+max)*-1,
+                    color: ["orange"],
+                    title:"Ponad Sto"               
+                  },
+                  {
+                    value :max,
+                    color: [colMain],
+                    title : "WYnik do Stu"                
+                  }];
+                  return dat;
+                } else {
+                  let dat = [                            
+                    {
+                      value : max,
+                      color: ["orange"],
+                      title:"Ponad Sto"               
+                    },
+                    {
+                      value :max-((max*2)+alu)*-1,
+                      color: [colMain],
+                      title : "WYnik do Stu"                
+                    },
+                    {
+                      value : ((max*2)+alu)*-1,
+                      color: "rgba(255, 83, 25, 0.8)",
+                      title : "Pozostałe"                
+                    }];
+                    return dat;
+                }                   
+          } else {
+            if (alu!=null) {
+              if (alu>=max) {
+                if (alu<=max*2) {
+                let dat = [
+                  {
+                    value : max,
+                    color: [colMain],
+                    title : "WYnik do Stu"                
+                  },
+                  {
+                    value :alu-max,
+                    color: ["red"],
+                    title:"Ponad Sto"                                           
+                  },
+                  {
+                  value :max-(alu-max),
+                  color: ["white"],
+                  title:"Pozostałe" 
+                  }];
+                return dat;
+              } else {
+                let dat = [
+                  {
+                    value :alu-max*2,
+                    color: ["red"],
+                    title:"Ponad dwieście"                                           
+                  },
+                  {
+                    value : max-(alu-max*2),
+                    color: [colMain],
+                    title : "WYnik do Stu"                
+                  },
+                  {
+                    value :max,
+                    color: ["red"],
+                    title:"Ponad Sto"                                           
+                  }];
+                  return dat; 
+              }
+              
+              } else {
+                  let dat = [
+                    {
+                      value : alu,
+                      color: [colMain],
+                      title : "Wynik"                
+                    },
+                    {
+                      value : max+alu,
+                      color: "rgba(219,220,221,0.6)",
+                      title : "Do stu"                                
+                    }];
+                  return dat;
+                  }
+            } else {
+              let dat = [{
+                  value : 0,
+                  color: [colMain],
+                  title : "Wynik"                
+                }];
+              return dat;
+            };                   
+          }
+        } else {
+        if(alu >= max){
+        let dat = [
+          {
+            value :alu-max,
+            color: ["orange"],
+            title:"Ponad Sto"               
+          },
+          {
+            value : max-(alu-max),
+            color: [colMain],
+            title : "WYnik do Stu"                
+          }];
+          return dat;
+        }else{
+          if (alu!=null) {
+          let dat = [
+            {
+              value : alu,
+              color: [colMain],
+              title : "Wynik"                
+            },
+            {
+              value : max-(alu),
+              color: "rgba(219,220,221,0.6)",
+              title : "Do stu"                                
+            }];
+            return dat;
+          } else {
+            let dat = [
+              {
+                value : 0,
+                color: [colMain],
+                title : "Wynik"                
+              }];
+              return dat;
+          };                   
+        }
+      }
+    };            
+    function get_options(title,subtitle,type,valu,ch,angl,fntsi,fcol,jedn) {
+      let w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+      let h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+        let sc=13*w/1920-1;
+        if (ch==2) {
+          sc=18*w/1920-1
+        }else if(ch==3||ch==4) {
+          sc=16*w/1920-1
+          };
+          let DataTmpl="<%=v3%>%";
+          let AxisLabel="Procent"
+       if (ch==4) {
+          DataTmpl='<%=v3%>'+jedn;
+          if (jedn=="zł") {AxisLabel="PLN"} else {if (jedn=="%") {AxisLabel="Procent"} else { if (jedn=='mb') {AxisLabel='mb/godz' } else {AxisLabel="Promil"}}};
+        };
+        if (type=="Doughnut"){
+          if (valu=='null%') {valu=["BRAK DANYCH"]};
+          let options = {
+          canvasBorders : true,
+          multiGraph : true,
+          canvasBordersColor : "rgba(151,187,205,1)",
+          canvasBordersWidth : 1,
+          annotateDisplay:true,
+          dynamicDisplay : false,
+          graphTitle:title,
+          graphSubTitle:subtitle,
+          graphTitleFontSize:24*w/1920-1,
+          graphSubTitleFontSize:18*w/1920-1,
+          spaceBottom: 10,
+          animationSteps : 30,
+          spaceTop: 10,                            
+          animation: true,
+          crossText : valu,
+          crossTextAngle : angl,
+          crossTextFontSize : fntsi,
+          crossTextFontColor: fcol,
+          crossTextFontStyle : ["bold"],
+            };
+            return options;
+        }else if (type=="Bar") {
+            let options = {
+          canvasBorders : true,
+          canvasBordersColor : "rgba(151,187,205,1)",
+          canvasBordersWidth : 1,
+          scaleYGridLinesStep: 2,
+          dynamicDisplay : false,
+          inGraphDataBackgroundColor:"yellow",
+          annotateDisplay:true,
+          animation: true,
+          animationSteps : 30,
+          yAxisMinimumInterval : 2,
+          inGraphDataAlign : "center",
+          inGraphDataVAlign: "center",
+          inGraphDataShow : true,
+          inGraphDataFontSize : 26*w/1920-1,
+          inGraphDataTmpl : DataTmpl,
+          inGraphDataFontStyle : "bold",
+          graphTitle:title,
+          graphSubTitle:subtitle,
+          graphTitleFontSize:24*w/1920-1,
+          graphSubTitleFontSize:18*w/1920-1,
+          yAxisLabel : AxisLabel,
+          yAxisFontSize: 18*w/1920-1,
+          xAxisFontSize : 25*w/1920-1,
+          scaleFontSize: sc,
+          showYLabels: 2,
+          scaleGridLineStyle : "longDashShortDash",
+          scaleGridLineWidth: "0.2",
+          scaleLineColor: "rgba(151,187,205,1)",
+          scaleGridLineColor : "rgba(151,187,205,1)", 
+          spaceBottom: 10,
+          spaceTop: 10, 
+            };
+            return options;
+       } else {
+        let options = {
+        canvasBorders : true,
+        canvasBordersColor : "rgba(151,187,205,1)",
+        canvasBordersWidth : 1,      
+        scaleYGridLinesStep: 2,
+        dynamicDisplay : false,
+        annotateDisplay:true,
+        inGraphDataBackgroundColor:"yellow",
+        yAxisMinimumInterval : 2,
+        inGraphDataAlign : "center",
+        inGraphDataShow : true,
+        inGraphDataFontSize : 26*w/1920-1,
+        scaleFontSize: sc,
+        inGraphDataTmpl : DataTmpl,
+        inGraphDatabordercolor: 'yellow',
+        inGraphDataFontStyle : "bold",
+        graphTitle:title,
+        graphTitleFontSize:24*w/1920-1,
+        graphSubTitleFontSize:18*w/1920-1,
+        graphSubTitle:subtitle,
+        animationSteps : 30,
+        animationLeftToRight : true,
+        yAxisLabel : AxisLabel,
+        yAxisFontSize: 18*w/1920-1,
+        xAxisFontSize : 25*w/1920-1,
+        showYLabels: 2,
+        scaleGridLineStyle : "longDashShortDash",
+        scaleGridLineWidth: "0.2",
+        scaleLineColor: "rgba(151,187,205,1)",
+        scaleGridLineColor : "rgba(151,187,205,1)",
+        spaceBottom: 10,
+        spaceTop: 10,
+        };
+        return options;
+      };      
+    }
+    let uuid=sessionStorage.getItem('uuid');
+    let privekey=sessionStorage.getItem('privateKey');
+    if (sessionStorage.getItem('name')!=null) {
+      $("#logon").text('Zalogowano:' + sessionStorage.getItem('name'));
+    } else {}
+      let c0=null;
+      let c1=null;
+      let c2=null;
+      let c3=null;
+      let c4=null;      
+      let DEP="400S0";
+      let qr=IS_one(DEP)
+      let set=1;
+      let de=0;
+      let first=0;
+      let txt="400S";
+      let cont=0;
+      let nxt=0;
+      let iter=0;
+      var resizeTimer;      
+    function res(){
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(function() { 
+        if (anim==0&&set==0) {
+          anim=1;             
+        } 
+        const a = vm.loadDataset(set,false);              
+        }, 250)
+      }                     
+      function updateValues() {
+        iter=iter+1;
+        if (iter>1) {iter=0};
+        if (iter==0) {
+          set=set+1;
+          if(set>4) {
+            set=0;
+            de=de+1;
+            cont=1;
+            if (de>0 && txt=="300M") {
+              txt="200S";
+              de=0;
+            };
+            if (de>1 && txt=="600M") {
+              txt="300M";
+              de=0
+            };
+            if (de>2) {
+                de=0;  
+              };  
+            };       
+          DEP=txt + de;
+          qr=IS_one(DEP)
+          };
+          if (anim==0&&set==0) {
+            anim=1;               
+          };
+          if (typeof c0!='undefined' && typeof c2!='undefined' && typeof c3!='undefined' && typeof c4!='undefined')
+          {
+            if (c0!=null && c2!=null && c3!=null && c4!=null) {
+              while (c0.completed==false||c2.completed==false||c3.completed==false||c4.completed==false) {
+                sleep(50);
+              };
+            }              
+          };
+          if (c1!==null) {
+            while (c1.completed==false) {
+              sleep(50);
+            };
+          } ; 
+          sleep(100);
+          if (iter==1) {
+            if (set>0 && set<4) {
+              if (txt.substring(0,1)!='6') {          
+                const as = vm.loadDataset(set,false,0); 
+              };                         
+            };          
+          } else {
+            if (txt.substring(0,1)!='6') {
+              const as = vm.loadDataset(set,true,2); 
+            } else {
+              const as =vm.loadDataset(set,true,0); 
+            }           
+          };           
+          if (nxt==1) {cont=1};
+          if (set==0) {cont=0}; 
+          if (set==2 && cont==0 && qr>1) {nxt=1};
+          if (set==3 && cont==0 && qr>1) {nxt=1};                     
+          };
+            window.setTimeout(function() {
+              document.location.href = document.location.href;
+            }, 1000 * 60 * 60 * 6);
+            window.addEventListener('resize', res);        
+            var vm = new MainViewModel();        
+            setTimeout(res,1000); 
+            setInterval(updateValues,10000);
+            function IS_one (depar) {
+              let ar=';300M1;000M1;200S3;500L4;500L3;400S3;600W0;000M0';
+              if (ar.indexOf(depar)!=-1) {
+                return 1;
+              } else {
+                let as =';600M1;600M0;300M0;';
+                if (as.indexOf(depar)!=-1) {
+                  return 3;
+                } else {
+                  let es =';100K0;100K1;100K2';
+                  if (es.indexOf(depar)!=-1) {
+                    return 4;
+                  } else {
+                    let s =';200S2';
+                    if (s.indexOf(depar)!=-1) {
+                      return 2;
+                    } else {
+                    return 2;
+                  }
+                };
+              };
+            };
+            };
+  

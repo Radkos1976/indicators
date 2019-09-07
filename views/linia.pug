@@ -1,0 +1,139 @@
+
+html(lang='pl')
+  head
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1') 
+    link(rel='stylesheet', href='/javascripts/jquery-ui-1.12.1/jquery-ui.css')
+    link(rel='stylesheet', href='/stylesheets/styl_line.css') 
+    script(src='/javascripts/jquery-2.2.1.min.js' , type='text/javascript')
+    script(src='/javascripts/jquery-ui-1.12.1/jquery-ui.min.js', type='text/javascript')      
+    script(src='/javascripts/ko.js', type='text/javascript')
+    script(src='/javascripts/ko_sort.js', type='text/javascript')
+    script(src='/js/client.js', type='text/javascript')
+    script(src='/cjs/index.js', type='text/javascript') 
+    script(src='/reload/reload.js')     
+    title Wyniki Audytów Kontroli Jakości    
+  body
+#main
+    div Seating Assignments
+.note
+  | Rules: no more than 4 students per table. Must have at least one student of each gender at a full table.
+#main(data-bind='foreach: tables')
+  .table
+    span(data-bind='text: students.id')
+    .seats(data-bind='sortable: { data: students, allowDrop: $root.isTableFull }')
+      .student(data-bind='text: name')
+    .count(data-bind="text: students().length + '/' + $root.maximumStudents, css: { ready: students().length < $root.maximumStudents }")
+#extra
+  div Available Students
+  .new(data-bind='sortable: availableStudents')
+    .student(data-bind='text: name')
+#message(data-bind='flash: lastAction')
+#error(data-bind='flash: lastError')
+#master
+  div Master List
+  table
+    tbody
+      tr
+        th
+        th Seat One
+        th Seat Two
+        th Seat Three
+        th Seat Four
+    tbody(data-bind='foreach: tables')
+      tr
+        th(data-bind='text: students.id')
+        // ko foreach: students
+        td(data-bind='text: name')
+        // /ko
+    tbody
+      tr
+        th Available
+        // ko foreach: availableStudents
+        td(data-bind='text: name')
+        // /ko
+      
+script(type='text/javascript').
+ ko.bindingHandlers.flash = {
+    init: function(element) {
+        $(element).hide();
+    },
+    update: function(element, valueAccessor) {
+        var value = ko.utils.unwrapObservable(valueAccessor());
+        if (value) {
+            $(element).stop().hide().text(value).fadeIn(function() {
+                clearTimeout($(element).data("timeout"));
+                $(element).data("timeout", setTimeout(function() {
+                    $(element).fadeOut();
+                    valueAccessor()(null);
+                }, 3000));
+            });
+        }
+    },
+    timeout: null
+  };
+ var Student = function(id, name, gender) {
+    this.id = id;
+    this.name = ko.observable(name);
+    this.gender = gender;
+  };
+ var Table = function(id, students) {
+    this.students = ko.observableArray(students);
+    this.students.id = id;
+    };
+  var SeatingChartModel = function(tables, availableStudents) {
+    var self = this;
+    this.tables = ko.observableArray(tables);
+    this.availableStudents = ko.observableArray(availableStudents);
+    this.availableStudents.id = "Available Students";
+    this.lastAction = ko.observable();
+    this.lastError = ko.observable();
+    this.maximumStudents = 4;
+    this.isTableFull = function(parent) {return parent().length < self.maximumStudents; }
+    this.updateLastAction = function(arg) {self.lastAction("Moved " + arg.item.name() + " from " + arg.sourceParent.id + " (seat " + (arg.sourceIndex + 1) + ") to " + arg.targetParent.id + " (seat " + (arg.targetIndex + 1) + ")");}
+    this.verifyAssignments = function(arg) {
+     var gender, found,
+        parent = arg.targetParent;
+        if (parent.id !== "Available Students" && parent().length === 3 && parent.indexOf(arg.item) < 0) {
+            gender = arg.item.gender;
+            if (!ko.utils.arrayFirst(parent(), function(student) { return student.gender !== gender;})) {
+                self.lastError("Cannot move " + arg.item.name() + " to " + arg.targetParent.id + " because there would be too many " + gender + " students");
+                arg.cancelDrop = true;
+            }}}
+    };
+ var extraStudents = [
+    new Student(16, "Parker", "male"),
+    new Student(17, "Dennis", "male"),
+    new Student(18, "Angel", "female")
+  ];
+ var initialTables = [
+    new Table("Linia 1",  [
+        new Student(1, "Bobby", "male"),
+        new Student(2, "Ted", "male"),
+        new Student(3, "Jim", "male")
+    ]),
+    new Table("Table Two", [
+        new Student(4, "Michelle", "female"),
+        new Student(5, "Erin", "female"),
+        new Student(6, "Chase", "male")
+    ]),
+    new Table("Table Three", [
+        new Student(7, "Denise", "female"),
+        new Student(8, "Chip", "male"),
+        new Student(9, "Kylie", "female")
+    ]),
+    new Table("Table Four", [
+        new Student(10, "Cheryl", "female"),
+        new Student(11, "Doug", "male"),
+        new Student(12, "Connor", "male")
+    ]),
+    new Table("Table Five", [
+        new Student(13, "Cody", "male"),
+        new Student(14, "Farrah", "female"),
+        new Student(15, "Lyla", "female")
+    ])
+  ];
+ var vm = new SeatingChartModel(initialTables, extraStudents);
+ ko.bindingHandlers.sortable.beforeMove = vm.verifyAssignments;
+ ko.bindingHandlers.sortable.afterMove = vm.updateLastAction;
+ ko.applyBindings(vm);

@@ -1,0 +1,383 @@
+extends layout
+
+block content
+  div
+  
+    canvas#canvas3(height='100', width='1600')
+    canvas#canvas4(height='100', width='1600')
+    canvas#canvas2(height='100', width='1600') 
+    canvas#canvas(height='450', width='1600') 
+    canvas#canvas1(height='450', width='1600')
+        script(type='text/javascript').
+          function MainViewModel(data) {
+                    
+            var self = this;
+            var ctx =  $("#canvas").get(0).getContext("2d");    
+            var ctx1 = $("#canvas1").get(0).getContext("2d");
+            var ctx2=  $("#canvas3").get(0).getContext("2d");
+            var ctx3=  $("#canvas4").get(0).getContext("2d");
+            var ctx4=  $("#canvas2").get(0).getContext("2d");
+            self.loadDataset = function(id,refr) {
+            var w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            var h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+            var mnth=0;
+              if (id==0) {
+                ctx.canvas.width  = 1;
+                ctx.canvas.height = 1;
+ 
+              } else {
+                  $.get("/data/"+id+DEP,function(data) {
+                  var options = get_options(data.title,data.subtitle,"Line",0,id);        
+                  ctx.canvas.width  = Math.round(w*0.985);
+                  ctx.canvas.height = Math.round(h*0.30);
+                  
+                  if (refr==false) {
+                    var myLine = new Chart(ctx).Line(data,options);
+                  } else {
+                    deleteHighLight(ctx,data);
+                    updateChart(ctx,data,options,true,true);
+                  } 
+                });
+              }
+            if (id==1) {
+              ctx1.canvas.width  = 1;
+              ctx1.canvas.height = 1;
+            } else {
+              if (id==0) {
+                ctx1.canvas.width  = Math.round(w*0.985);
+                ctx1.canvas.height = Math.round(h*0.985);
+                ctx1.font=Math.round(Math.round(h*0.985)*0.06) +'px Arial';
+              $.get("/data/"+(12)+DEP,function(wyniki) {           
+                $.get("/data/"+(4)+DEP, function(dta) {
+                var wyn=[];
+                wyn.push(0);
+                var m=0;
+                for (var i=0; i < dta.table[1].length; i++) {
+                  if (dta.table[dta.table.length-1][i]==wyniki.Wyd) {
+                    m=i;
+                    };
+                  if (dta.table[1][i]==null) {
+                      dta.table[1].splice(i,dta.table[1].length-i);
+                    } else {
+                    dta.table[1][i]=dta.table[1][i]+'%';
+                    };                 
+                  
+                  };
+                wyn.push(m);
+                m=0
+                for (var i=0; i < dta.table[2].length; i++) {
+                  if (dta.table[dta.table.length-1][i]==wyniki.five_S) {
+                    m=i;
+                    };
+                    if (dta.table[2][i]==null) {
+                        dta.table[2].splice(i,dta.table[2].length-i);
+                      } else {                  
+                  dta.table[2][i]=dta.table[2][i]+'%';
+                    };
+                  };
+                wyn.push(m);
+                m=0
+                for (var i=0; i < dta.table[3].length; i++) {
+                  if (dta.table[dta.table.length-1][i]<=wyniki.value) {
+                    m=i;
+                    };                  
+                  dta.table[3][i]=dta.table[3][i]+wyniki.jedn;
+                  };
+                wyn.push(m);  
+                var fnt1 = getMetrics(" Wynik ",ctx1.font);
+                var fnt2 = getMetrics("Wydajność",ctx1.font);
+                var opt={
+                  context : ctx1,
+                  table : dta.table,
+                  columns : dta.columns,
+                  wynik: wyn,
+                  width : ctx1.canvas.width,
+                  height : ctx1.canvas.height,
+                  colwidth : [fnt1.width*1.2,fnt2.width*1.2,fnt2.width*1.2,fnt2.width*1.2],
+                  colheight : fnt1.height*0.8,
+                  tblFNTSIZ : fnt1.height*0.7,
+                  headfntSIZ : fnt1.height*0.8,
+                  waga : dta.waga,
+                  wyniki : ['Wynik',wyniki.wydajnosc + '%',wyniki.s + '%',wyniki.value + wyniki.jedn],
+                  title : dta.title,
+                  subtitle : wyniki.subtitle,
+                  fonttitle : 'bold '+ Math.round(fnt1.height) + 'px Arial',
+                  fontsubtitle :'italic '+ Math.round(fnt1.height*0.7)+ 'px Arial',
+                };
+                anim=0
+                var myline=TabANIM(opt);
+              }); 
+              });   
+                } else {                 
+                  $.get("/data/"+(id+4)+DEP, function(data) {
+                    var options = get_options(data.title,data.subtitle,"Bar",0,id);          
+                    ctx1.canvas.width  = Math.round(w*0.985);
+                    ctx1.canvas.height = Math.round(h*0.30);
+                    anim=1;
+                    for (var i=0; i < data.datasets[0].data.length; i++) {
+                      if (data.datasets[0].data[i]==null) {
+                        data.datasets[0].data[i]=undefined;
+                      };
+                    };
+                    if (refr==false || cont==0) {
+                      var myLine = new Chart(ctx1).Bar(data,options);
+                    } else {
+                      deleteHighLight(ctx1,data);
+                      updateChart(ctx1,data,options,true,true);
+                    }; 
+                  });
+                };
+              };  
+           
+          if (id==0) {
+            ctx2.canvas.width  = 1;
+            ctx2.canvas.height = 1 ;
+          } else { 
+            $.get("/data/"+(10)+DEP, function(data) {
+              var dat = pop_Don(data.color,data.value,data.jedn);
+              var options = get_options(data.title,data.subtitle,"Doughnut",[data.value + '%'],0,[0],[48*w/1920-1],["black"]);
+              mnth=data.Mnt;
+              if (id==1) {
+                ctx2.canvas.width  = Math.round(w*0.328);
+                ctx2.canvas.height = Math.round(h*0.65);
+              } else { 
+                ctx2.canvas.width  = Math.round(w*0.328);
+                ctx2.canvas.height = Math.round(h*0.35);
+              };
+              if (refr==false) {
+                var mydon = new Chart(ctx2).Doughnut(dat,options);
+              } else {
+                deleteHighLight(ctx2,dat);
+                updateChart(ctx2,dat,options,true,true);
+              }; 
+            });
+          };
+          if (id==0) {
+              ctx3.canvas.width  = 1;
+              ctx3.canvas.height = 1 ;
+          } else {
+            $.get("/data/"+(12)+DEP, function(data) {
+              var dat = pop_Don(data.color,data.value,data.jedn);
+              if (mnth!=data.Mnt) {
+                var options = get_options(data.title,data.subtitle,"Doughnut",["Poprzedni miesiąc",data.value + data.jedn],0,[30,0],[50*w/1920-1,48*w/1920-1],["lightgrey","black"]);
+              } else {
+                var options = get_options(data.title,data.subtitle,"Doughnut",[data.value + data.jedn],0,[0],[48*w/1920-1],["black"]);
+              };
+              if (id==1) {
+                ctx3.canvas.width  = Math.round(w*0.328);
+                ctx3.canvas.height = Math.round(h*0.65);
+              } else {
+                ctx3.canvas.width  = Math.round(w*0.328);
+                ctx3.canvas.height = Math.round(h*0.35);
+              };
+              if (refr==false) {
+                var mydon = new Chart(ctx3).Doughnut(dat,options);
+              } else {
+                deleteHighLight(ctx3,dat);
+                updateChart(ctx3,dat,options,true,true);
+              }; 
+            });
+          };
+          if (id==0) {
+            ctx4.canvas.width  = 1;
+            ctx4.canvas.height = 1 ;
+          } else {
+            $.get("/data/"+(11)+DEP, function(data) {
+              var dat = pop_Don(data.color,data.value,data.jedn);
+              if (mnth!=data.Mnt) {
+                var options = get_options(data.title,data.subtitle,"Doughnut",["Poprzedni miesiąc",data.value + data.jedn],0,[30,0],[50*w/1920-1,48*w/1920-1],["BurlyWood","black"]);
+              } else {
+                var options = get_options(data.title,data.subtitle,"Doughnut",[data.value + data.jedn],0,[0],[48*w/1920-1],["black"]);
+              };
+              if (id==1) {
+                ctx4.canvas.width  = Math.round(w*0.328);
+                ctx4.canvas.height = Math.round(h*0.65);
+              } else {
+                ctx4.canvas.width  = Math.round(w*0.328);
+                ctx4.canvas.height = Math.round(h*0.35);
+              };
+              if (refr==false) {
+                var mydon = new Chart(ctx4).Doughnut(dat,options);
+              } else {
+                deleteHighLight(ctx4,dat);
+                updateChart(ctx4,dat,options,true,true);
+              };
+            });
+            };
+          };        
+          };
+          
+            function pop_Don(colMain,alu,jed) {
+                if (jed=='%') {
+                  max=100} else {max=430};
+                
+                if(alu >= max){
+                var dat = [
+                  {
+                    value :alu-max,
+                    color: ["orange"],
+                    title:"Ponad Sto"               
+                  },
+                  {
+                    value : max-(alu-max),
+                    color: [colMain],
+                    title : "WYnik do Stu"                
+                  }];
+                  return dat;
+                }else{
+                  var dat = [
+                    {
+                      value : alu,
+                      color: [colMain],
+                      title : "Wynik"                
+                    },
+                    {
+                      value : max-(alu),
+                      color: "white",
+                      title : "Do stu"                                
+                    }];
+                    return dat;
+                }
+            };
+            
+            function get_options(title,subtitle,type,valu,ch,angl,fntsi,fcol) {
+              var w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+              var h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+                var sc=13*w/1920-1;
+                if (ch==2) {
+                  sc=18*w/1920-1
+                    }else if(ch==3) {
+                  sc=16*w/1920-1
+                  };
+                
+                if (type=="Doughnut"){
+                  var options = {
+                  canvasBorders : true,
+                  canvasBordersColor : "rgba(151,187,205,1)",
+                  canvasBordersWidth : 1,
+                  annotateDisplay:true,
+                  graphTitle:title,
+                  graphSubTitle:subtitle,
+                  graphTitleFontSize:24*w/1920-1,
+                  graphSubTitleFontSize:18*w/1920-1,
+                  spaceBottom: 10,
+                  animationSteps : 200,
+                  spaceTop: 10,                            
+                  animation: true,
+                  crossText : valu,
+                  crossTextAngle : angl,
+                  crossTextFontSize : fntsi,
+                  crossTextFontColor: fcol,
+                  crossTextFontStyle : ["bold"],
+                    };
+                    return options;
+                }else if (type=="Bar") {
+                    var options = {
+                  canvasBorders : true,
+                  canvasBordersColor : "rgba(151,187,205,1)",
+                  canvasBordersWidth : 1,
+                  scaleYGridLinesStep: 2,
+                  inGraphDataBackgroundColor:"yellow",
+                  annotateDisplay:true,
+                  animation: true,
+                  animationSteps : 200,
+                  yAxisMinimumInterval : 2,
+                  inGraphDataAlign : "center",
+                  inGraphDataVAlign: "center",
+                  inGraphDataShow : true,
+                  inGraphDataFontSize : 26*w/1920-1,
+                  inGraphDataTmpl : "<%=v3%>%",
+                  inGraphDataFontStyle : "bold",
+                  graphTitle:title,
+                  graphSubTitle:subtitle,
+                  graphTitleFontSize:24*w/1920-1,
+                  graphSubTitleFontSize:18*w/1920-1,
+                  yAxisLabel : "Procent",
+                  yAxisFontSize: 18*w/1920-1,
+                  xAxisFontSize : 25*w/1920-1,
+                  scaleFontSize: sc,
+                  showYLabels: 2,
+                  scaleGridLineStyle : "longDashShortDash",
+                  scaleGridLineWidth: "0.2",
+                  scaleLineColor: "rgba(151,187,205,1)",
+                  scaleGridLineColor : "rgba(151,187,205,1)", 
+                  spaceBottom: 10,
+                  spaceTop: 10, 
+                    };
+                    return options;
+               } else {
+                var options = {
+                canvasBorders : true,
+                canvasBordersColor : "rgba(151,187,205,1)",
+                canvasBordersWidth : 1,      
+                scaleYGridLinesStep: 2,
+                annotateDisplay:true,
+                inGraphDataBackgroundColor:"yellow",
+                yAxisMinimumInterval : 2,
+                inGraphDataAlign : "center",
+                inGraphDataShow : true,
+                inGraphDataFontSize : 26*w/1920-1,
+                scaleFontSize: sc,
+                inGraphDataTmpl : "<%=v3%>%",
+                inGraphDatabordercolor: 'yellow',
+                inGraphDataFontStyle : "bold",
+                graphTitle:title,
+                graphTitleFontSize:24*w/1920-1,
+                graphSubTitleFontSize:18*w/1920-1,
+                graphSubTitle:subtitle,
+                animationSteps : 200,
+                animationLeftToRight : true,
+                yAxisLabel : "Procent",
+                yAxisFontSize: 18*w/1920-1,
+                xAxisFontSize : 25*w/1920-1,
+                showYLabels: 2,
+                scaleGridLineStyle : "longDashShortDash",
+                scaleGridLineWidth: "0.2",
+                scaleLineColor: "rgba(151,187,205,1)",
+                scaleGridLineColor : "rgba(151,187,205,1)",
+                spaceBottom: 10,
+                spaceTop: 10,
+                };
+                return options;
+              };      
+            }
+            
+            
+            var DEP="200S0";
+            var set=0;
+            var de=0;
+            var first=0;
+            var txt="200S";
+            var cont=0;
+                 
+            function updateValues() {
+              first=1;
+            
+            vm.loadDataset(set,true);
+            set=set+1;
+            if(set>3) {
+              set=0;
+              de=de+1;
+              cont=1;
+              if (de>1) {
+                  de=0;  
+                  switch (txt) {
+                  case "500L":
+                    txt="400S"
+                    break; 
+                  case "200S":
+                    txt="500L"
+                    break;
+                  case "400S":
+                    txt="200S"
+                    break; 
+                  };
+                };
+              DEP=txt + de;
+              };        
+            }
+            window.addEventListener('resize', updateValues);
+            var vm = new MainViewModel();
+            ko.applyBindings(vm);
+            vm.loadDataset(1,false);
+            setInterval(updateValues,30000);

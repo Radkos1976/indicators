@@ -1,0 +1,60 @@
+extends layout
+
+block content
+  div
+  ul
+    li.dropdown
+      a.dropbtn() Wydział    
+      select#elementId(onchange='updateValues()')        
+          option(disabled='' style="font-size: 16px;font-weight: bold;; background-color: lightblue;") WYDZIAŁ TAPICERNII SITS
+          option(value='400S0') TAPICERNIA
+          option(value='400S1') TAPICERNIA WYKL. PODUSZEK
+          option(value='400S2') TAPICERNIA PRACOWNICY POŚR. PROD.
+          option(value='400S3') ROZLICZENIE TAPICERNI
+          option(disabled='' style="font-size: 16px;font-weight: bold;; background-color: lightblue;") WYDZIAŁ LINII IKEA  
+          option(value='500L0') LINIA PRODUKCYJNA
+          option(value='500L1') NAPEŁNIANIE PODUSZEK
+          option(value='500L2') OPERATORZY LINIA i PRACOWNICY POŚR. PROD.
+          option(value='500L3') ROZLICZENIE LINII IKEA
+          option(value='500L4') LIDER I PRACOWNICY GRUPY WDROŻENIOWEJ                
+          option(disabled='' style="font-size: 16x;font-weight: bold;; background-color: lightblue;")  WYDZIAŁ SZWALNI I KROJOWNI
+          option(value='200S0') SZWALNIA I KROJOWNIA SKÓR
+          option(value='200S1') SZWALNIA I KROJOWNIA TKANIN
+          option(value='200S2') MAGAZYN POSZYĆ i TKANIN
+          option(value='200S3') ROZLICZENIE SZWALNI i KROJOWNI
+          option(disabled='' style="font-size: 16px;font-weight: bold;; background-color: lightblue;") DZIAŁY POMOCNICZE
+          option(value='000M0') MODELARNIA
+          option(value='000M1') DZIAŁ ROZWOJU PRODUKCJI
+          option(value='300M1') DYSPOZYTOR, POMOCNIK DYSPOZYTORA
+          option(value='300M0') MAGAZYN MATERIAŁÓW
+          option(value='600M0') MAGAZYN WYROBÓW GOTOWYCH IKEA
+          option(value='600M1') MAGAZYN WYROBÓW GOTOWYCH SITS              
+    li.dropdown  
+      a.dropbtn() Rodzaj danych
+      select#elementd(onchange='updateValues()') 
+          option(disabled='' style="font-size: 16px;font-weight: bold;; background-color: lightblue;") BIEŻĄCE WYNIKI GRAFICZNIE  
+          option(value=1) DZIENNE
+          option(value=2) TYGODNIOWE
+          option(value=3) MIESIĘCZNE
+          option(disabled='' style="font-size: 16px;font-weight: bold;; background-color: lightblue;") WYSOKOŚĆ PREMII
+          option(value=0) TABELA CELÓW DO PREMII
+          
+              
+    li.dropdown(style="float: right")
+      a.dropbtn() Przełącz na prezentacje dla działów
+      .dropdown-content
+        divider PREZENTACJE DLA PRODUKCJI
+        a(href='AL') Prezentacja celów dla całości Produkcji
+        a(href='400ST') Prezentacja celów Tapicerni
+        a(href='500LI') Prezentacja celów Linia Produkcyjna
+        a(href='200SW') Prezentacja celów Szwalnia
+        divider PREZENTACJE POMOCNICZE 
+        a(href='ALL') Prezentacja celów dla całości Produkcji z działami pomocniczymi
+        divider PLIKI DO POBRANIA
+        a(href='Wyniki_Działy_Produkcyjne.xlsm') Premia w EXCEL
+  canvas#canvas
+  script(type='text/javascript').
+    function MainViewModel(data) {                
+      var self = this;
+      var ctx =  $("#canvas").get(0).getContext("2d");
+      

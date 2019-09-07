@@ -1,0 +1,477 @@
+doctype html
+html(lang='pl')
+  head
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1')    
+    link(rel='stylesheet', href='/bootstrap/dist/css/bootstrap.min.css')
+    link(rel='stylesheet', href='/jquery-ui/jquery-ui.min.css')
+    link(rel='stylesheet', href='/stylesheets/style00.css')
+    script(src='/jquery/jquery.js' , type='text/javascript')
+    script(src='/bootstrap/dist/js/bootstrap.min.js', type='text/javascript')
+    script(src='/jquery-ui/jquery-ui.js', type='text/javascript') 
+    script(src='/javascripts/JQUERY_PL.js', type='text/javascript')           
+    script(src='/ko/knockout-latest.js', type='text/javascript')
+    script(src='/js/client.js', type='text/javascript')
+    script(src='/cjs/index.js', type='text/javascript') 
+    script(src='/reload/reload.js')  
+    title Obliczenie Indywidualnego Mnożnika Jakościowego    
+  body
+  h2 Indywidualny Mnożnik Jakościowy
+  #ontop.btn.btn-primary.btn-lg(href="#myModal",title="Naciśnij żeby uruchomić obliczenia", data-toggle="modal",top= "70px", right= "0px") Oblicz Indywidualny Mnożnik Jakościowy
+  #accordion.panel-group
+   .panel.panel-default 
+     .panel-heading 
+      h4.panel-title 
+        a(data-toggle='collapse', data-parent='#accordion',title="Opis wskaźnika", href='#collapseZer')
+          | Informacje na temat Indywidualnego Mnożnika Jakościowego
+     #collapseZer.panel-collapse.collapse.in
+      .panel-body
+              p
+              h4  Wskaźnik dotyczy przede wszystkim Obszarów:
+               h5
+                li Linii IKEA
+                Li Tapicerni
+                Li Szwalni
+              h4  Indywidualny mnoznik jakościowy obliczany jest na podstawie skumulowanego wyniku kontroli jakości pracy danego pracownika w danym miesiącu gdzie:
+               h5
+                li Niezależnie od liczby uwag ,defektów podczas jednej kontroli ,brana jest pod uwagę suma punktów nie mniejsza od wartości -9 pkt (defekt)
+                li Wynikiem pojedyńczej kontoli jest uzyskanie przez pracownika punktów :
+                  p
+                  ol Pozytywna kontola = +1 punkt
+                  ol 1 uwaga = -3 punkty
+                  ol 1 defekt = -9 punktów
+                li Maksymalny skumulowany wynik po osiągnięciu, którego punkty nie są dodawane to 50 punktów
+                li Minimalny skumulowany wynik po osiągnięciu, którego punkty nie są odejmowane to -30 punktów                 
+              h4.container 
+              p
+              b           
+              h4 Tabela Punktacji Wyników Skumulowanego Mnożnika Jakościowego                              
+                table.table.table-condensed
+                 thead
+                  tr
+                   th Próg
+                   th Punkty
+                   th % Indywidualnego mnożnika jakościowego 
+                 tbody
+                  tr.success
+                   td 5
+                   td +50
+                   td 110%
+                  tr.info
+                   td 4
+                   td min.+31 max.+49
+                   td 105%
+                  tr.active
+                   td 3
+                   td min.0 max.+30
+                   td 100%
+                  tr
+                    td 2
+                    td min.-10 max.-1
+                    td 80% 
+                  tr.warning
+                    td 1
+                    td min.-29 max.-11
+                    td (skumulowany wynik kontroli x 2%) + 100%
+                  tr.danger
+                    td 0
+                    td -30
+                    td 0% 
+              h4 Indywidualna Premia za Wyniki
+               h5
+                li Premia wynikająca z poziomów realizacji wskaźników na danym obszarze podlega korekcie o indywidualny mnożnik Jakościowy
+                h3
+                b Indywidualna Premia = Kwota premii wynikająca z 'P' x 'Wysokość premii z obszaru' x 'Indywidualny mnożnik jakościowy'           
+              p      
+              a.btn.btn-primary.btn-lg(href="#myModal",title="Naciśnij żeby uruchomić obliczenia", data-toggle="modal") Oblicz Indywidualny Mnożnik Jakościowy               
+     #one.panel.panel-default 
+       .panel-heading 
+         h4.panel-title 
+           a(data-toggle='collapse',title="Podsumowanie wyniku", data-parent='#accordion', href='#collapseOne')
+             | Wynik w miesiącu     
+       #collapseOne.panel-collapse.collapse
+        .panel-body
+          #PERS        
+           p
+            | Numer Pracownika na karcie RCP : 
+            strong(data-bind='text: EMP_NO',value=' ')
+           p
+            | Miesiąc obliczeń : 
+            strong(data-bind='text: MNTH',value=' ')
+           p
+            | ID Osoby w IFS: 
+            strong(data-bind='text: EMP_ID',value='')
+           p
+            | Imię i nazwisko: 
+            strong(data-bind='text: EMP_NAME',value=' ')
+           p
+            | Ilość punktów: 
+            strong(data-bind='text: PUNKTY',value=' ') 
+           p
+            | Osiągnięty Próg mnożnika: 
+            strong(data-bind='text: PROG',value=' ')
+           p
+            | Wysokość Mnożnika Jakościowego: 
+            strong(data-bind='text: PREMIA',value=' ') 
+          p
+            | Liczba przeprowadzonych kontroli: 
+            strong(data-bind='text: CTRL_REK().length',value=' ')                           
+     #two.panel.panel-default
+      .panel-heading  
+        h4.panel-title 
+          a(data-toggle='collapse',title="Naciśnij żeby pokazać obliczenie wyniku graficznie" ,data-parent='#accordion', href='#collapseTwo')
+            | Obliczenie wyniku graficznie
+      #collapseTwo.panel-collapse.collapse
+        .panel-body
+          canvas#canvas
+     #three.panel.panel-default 
+      .panel-heading  
+        h4.panel-title 
+          a(data-toggle='collapse',title="Naciśnij zobaczyć szczegóły Kontroli", data-parent='#accordion', href='#collapseThree')
+            | Zestawienie przeprowadzonych kontoli
+      #collapseThree.panel-collapse.collapse 
+        .panel-body 
+           #pers_tbl      
+            table.table.table-fixed
+               col(style='width:5%')
+               col(style='width:13%')
+               col(style='width:7%')
+               col(style='width:5%')
+               col(style='width:5%')
+               col(style='width:5%')
+               col(style='width:7%')
+               col(style='width:10%')
+               col(style='width:5%')
+               col(style='width:5%')
+               col(style='width:8%')
+               col(style='width:20%') 
+               col(style='width:5%')                          
+               thead
+                 tr                
+                  th(style='width: 5%',title="Numer kontroli")
+                    |Nr
+                  th(style='width: 13%',title="Data kontroli") 
+                    |Data
+                  th(style='width: 7%',title="Wynik kontroli")
+                    |Stat_Kontr
+                  th(style='width: 5%',title="Liczba punktów")
+                    |Punty
+                  th(style='width: 5%',title="Obliczone punkty w danym momencie")
+                    |Obl_Punkty
+                  th(style='width: 5%',title="Obliczony próg w danym momencie")
+                    |Obl_PRÓG
+                  th(style='width: 7%',title="Obliczona premia w danym momencie")
+                    |Szac_PREMIA
+                  th(style='width: 10%',title="Kontroler")
+                    |Kontroler
+                  th(style='width: 5%',title="ID Kontrolera")
+                    |ID_Kontr
+                  th(style='width: 5%',title="Numer zlecenia")
+                    |NR_zlec
+                  th(style='width: 8%',title="Indeks zlecenia produkcyjnego")
+                    |Indeks                   
+                  th(style='width: 20%',title="Opis wykonywanego wyrobu")
+                    |Opis
+                  th(style='width: 5%',title="Skontrolowano sztuk..")
+                    |Szt_kontr                           
+               tbody(data-bind="foreach: CTRL_REK")              
+                 tr(title="Naciśnij żeby zobaczyć szczegóły kontroli",data-bind="css: Class")                                                   
+                  td(data-bind="text: NUM_REK",style='width: 5%')
+                  td(data-bind="text: Q_C_DATE",style='width: 13%')
+                  td(data-bind="text: Q_C_STATUS",style='width: 7%')
+                  td(data-bind="text: PUNKTY_zlec",style='width: 5%')
+                  td(data-bind="text: PUNKTY",style='width: 5%')
+                  td(data-bind="text: PROG",style='width: 5%')
+                  td(data-bind="text: PREMIA",style='width: 7%')
+                  td(data-bind="text: CONTROLER_NAME",style='width: 10%')
+                  td(data-bind="text: CONTROLER_PERSON",style='width: 5%')
+                  td(data-bind="text: ORDER_NO",style='width: 5%')
+                  td(data-bind="text: PART_NO",style='width: 8%')
+                  td(data-bind="text: DESCR",style='width: 20%')
+                  td(data-bind="text: QUANTITY",style='width: 5%')                  
+#myModal.modal.fade(tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")
+ .modal-dialog
+  .modal-content
+   .modal-header
+     button.close(type="button", data-dismiss="modal", aria-hidden="true") &times;
+     h4.modal-title Obliczenie indywidualnego mnożnika jakościowego
+     .modal-body
+      p
+      p Numer identyfikacyjny pracownika (cztero cyfrowy - znajdujący się na karcie RCP) 
+      input#EMP_NO.masked(type='text',value='', data-mask='____', placeholder='0000', data-grouplength='4', data-valid-example='0001',maxlength='4',onkeyup="this.value=this.value.replace(/[^0-9]/g,'');",onblur="pad()")
+      p
+      p Wprowadź miesiąc dla raportu w formacie (YYYY/MM)     
+      input#datepicker(name='startDate',type='text',value='') 
+      p         
+      .modal-footer
+        button.btn.btn-primary(type="button", data-dismiss="modal",onclick="Calc_start()") Pokaż wyniki        
+#Nofing.modal.fade(tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")
+    .modal-dialog
+      .modal-content
+        .modal-header
+             button.close(type="button", data-dismiss="modal", aria-hidden="true") &times;
+             h4 Zestawienie Uwag przedstawionych w trakcie kontroli            
+             .modal-body(style="{margin:10;padding:10;}") 
+              p           
+              table.table
+               col(style='width:5%')
+               col(style='width:18%')
+               col(style='width:8%')
+               thead
+                 tr                
+                  th(style='width: 7%')
+                    |Nr 
+                  th(style='width: 13%') 
+                    |Kod Błędu
+                  th(style='width: 75%')
+                    |Opis Błędu
+                  th(style='width: 7%')
+                    |Punkty
+               tbody(data-bind="foreach: CTRL")              
+                tr                                                  
+                  td(data-bind="text: LINE_NO",style='width: 7%')
+                  td(data-bind="text: NCR_PROC_CODE",style='width: 13%')
+                  td(data-bind="text: OPIS",style='width: 75%') 
+                  td(data-bind="text: PUNKTY",style='width: 7%')
+              p
+                p  Zasady punktacji:
+                li   Niezgodność : 1 punkt  
+                li   Defekt : 3 punkty    
+                b
+                | W systemie premiowym uzyskane punkty mnożone są razy 3  <br /> 
+                |  (wynik nie większy niż 9pkt na kontrolę) x ilość sztuk             
+             .modal-footer
+              button.btn.btn-primary(type="button", data-dismiss="modal") OK
+#cModal.modal.fade(tabindex="-1", role="dialog", aria-labelledby="myModalLabel", aria-hidden="true")
+  .modal-dialog    
+    .modal-content
+       .modal-header
+         span.clos(type="button", data-dismiss="modal", aria-hidden="true",style='color: #aaaaaa;float: right;font-size: 28px;font-weight: bold;float: right;cursor: pointer;') &times;
+         strong(data-bind="html: KOMUNIKAT",style='font-family: Arial, Helvetica, sans-serif;font-size: 20px;text-align: center;')                            
+         script(type='text/javascript'). 
+          var ctx =  $("#canvas").get(0).getContext("2d"); 
+          var modal = document.getElementById('cModal'); 
+          var span = document.getElementsByClassName("clos")[0];
+          function pad() {
+              var c = document.querySelector("#EMP_NO");
+              var s= c.value;
+              if (s!='') {        
+                while (s.length < 4) s = "0" + s;          
+                  c.value= s;
+                  }              
+          } 
+          function change_visib(_id,show) {
+            var dat=document.getElementById(_id)
+            if (show) {
+              dat.style.visibility = 'visible';
+            } else {
+              dat.style.visibility = 'hidden';
+            }
+          }                              
+          function showPleaseWait() {
+               var modalLoading = '<div class="modal" id="pleaseWaitDialog" data-backdrop="static" data-keyboard="false role="dialog">\
+                    <div class="modal-dialog">\
+                      <div class="modal-content">\
+                         <div class="modal-header">\
+                            <h4 class="modal-title">       Proszę Czekać...  Pobieram dane ...</h4>\
+                         </div>\
+                      <div class="modal-body">\
+                        <div class="progress">\
+                          <div class="progress-bar progress-bar-success progress-bar-striped active" role="progressbar"\
+                           aria-valuenow="100" aria-valuemin="0" aria-valuemax="100" style="width:100%; height: 40px">\
+                          </div>\
+                       </div>\
+                     </div>\
+                   </div>\
+                </div>\
+             </div>';
+             if (!$("#pleaseWaitDialog").length){
+               $(document.body).append(modalLoading);
+             } 
+           $("#pleaseWaitDialog").modal("show");
+          }
+          function hidePleaseWait() {
+              $("#pleaseWaitDialog").modal("hide");
+           }
+          $('#pers_tbl tbody').on('click', 'tr', function(){
+            $(this).closest('#pers_tbl tbody').find('tr').not('thead tr').removeClass('selected');    
+            $(this).toggleClass('selected');
+              if (viewModel.CTRL_REK()[$(this).index()].Q_C_STATUS =='Zgodny')
+              {
+                calert('Status kontroli Zgodny ... Brak Uwag');
+              }
+              else 
+              {
+                 
+                var link=viewModel.CTRL_REK()[$(this).index()].ID_QPC;             
+                $.get("/ctrl_info/lstaudit/" + link,function(data) {              
+                  if (data.DATA_VALID) {
+                    if (data.EMP_NO == "NOT FOUND") {                    
+                      calert("Brak zapisanych kontroli : <br\> <i> dla numeru " + link + " <br\ Proszę Odświeżyć dane></i>");
+                    } else {                                   
+                      viewModel.CTRL(data.DTA_detal);
+                      $('#Nofing').modal("show");
+                    }
+                  }
+                  else 
+                  {                
+                    calert("Wystąpił błąd połączenia :" + data.ERROR);
+                  }
+              });
+            }
+           });      
+          var viewModel = {
+                DATA_VALID : ko.observable("true"),
+                MNTH : ko.observable("NOT FOUND"),
+                EMP_NO : ko.observable("NOT FOUND"),
+                EMP_ID : ko.observable("NOT FOUND"),
+                EMP_NAME : ko.observable("NOT FOUND"),
+                PUNKTY : ko.observable(0),
+                PROG : ko.observable(0),
+                PREMIA : ko.observable(0),
+                CTRL_REK : ko.observableArray([]),
+                CTRL: ko.observableArray([]), 
+                KOMUNIKAT: ko.observable("Brak ")                                          
+              };          
+          window.onclick = function(event) {
+               if (event.target == modal) {
+                modal.style.display = "none";
+              }
+           }
+          span.onclick = function() {
+             modal.style.display = "none";
+           }
+          function calert(text) {
+            viewModel.KOMUNIKAT(text);
+            modal.style.display = "block";
+            $("#cModal").modal("show");
+          }           
+          var time = new Date().getTime();
+          $(document.body).bind("mousemove keypress", function(e) {
+                 time = new Date().getTime();
+            });        
+          function refresh() {
+              if(new Date().getTime() - time >= 60000) 
+                 window.location.reload(true);
+              else 
+                 setTimeout(refresh, 1000);
+              }                                                         
+          function Calc_start() {
+          showPleaseWait();        
+          change_visib("one",false);              
+          change_visib("two",false);              
+          change_visib("three",false); 
+          change_visib("PERS",false);                       
+          var c = document.querySelector("#EMP_NO");
+          var EMP_NO=c.value;
+          var d = document.querySelector("#datepicker");
+          var MNTH=d.value.replace('/','');          
+            if (EMP_NO!='0000' && EMP_NO!='') {
+              //ko.cleanNode(document.getElementById("PERS"));
+              //ko.cleanNode(document.getElementById("pers_tbl"));                     
+              $.get("/ctrl_info/pers_ctrl/:"+MNTH+EMP_NO,function(data) {              
+                if (data.DATA_VALID) {
+                  if (data.EMP_NO == "NOT FOUND") {                    
+                    calert("Brak zapisanych kontroli : <br\> <i> dla numeru " + EMP_NO + " w miesiącu " + MNTH + "</i>");
+                    $("#collapseZer").collapse('show')
+                    hidePleaseWait();
+                  } else {                                    
+                    change_visib("one",true);              
+                    change_visib("two",true);              
+                    change_visib("three",true);
+                    change_visib("PERS",true);
+                    $("#collapseZer").collapse('hide');
+                    viewModel.DATA_VALID(data.DATA_VALID).MNTH(data.MNTH).EMP_NO(data.EMP_NO).EMP_ID(data.EMP_ID).EMP_NAME(data.EMP_NAME).PUNKTY(data.PUNKTY).PROG(data.PROG).PREMIA(data.PREMIA).CTRL_REK(data.CTRL_REK)  ;                                  
+                    //ko.applyBindings(arr,document.getElementById("PERS"));
+                    //ko.applyBindings(arr,document.getElementById("pers_tbl"));
+                    ctx.canvas.width  = parseInt(Math.round(window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth*0.985))
+                    ctx.canvas.height = parseInt(Math.round( window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight*0.40));
+                    var dt={
+                      labels : data.CTRL_REK.map(function(it){ return it.NUM_REK}),
+                      title : 'Obliczenie mnożnika Jakościowego',
+                      subtitle: data.EMP_NAME + ' Miesiąc:'+data.MNTH,
+                      datasets : [
+                        {
+                          fillColor : "rgba(180,152,197,0.5)",
+                          strokeColor : "rgba(151,187,205,1)",
+                          pointColor : "rgba(220,220,220,1)",
+                          pointStrokeColor : "#fff",
+                          data : data.CTRL_REK.map(function(it){ return it.PUNKTY})
+                        }
+                        ]
+                    };
+                    //console.log(data.CTRL_REK.map(function(it){ return it.NR}));
+                    var options= {
+                    canvasBorders : true,
+                    canvasBordersColor : "rgba(151,187,205,1)",
+                    canvasBordersWidth : 1,      
+                    scaleYGridLinesStep: 2,
+                    dynamicDisplay : true,
+                    annotateDisplay:true,
+                    yAxisMinimumInterval : 2,  
+                    graphTitle:'Obliczenie mnożnika Jakościowego',  
+                    graphSubTitle:data.EMP_NAME + ' Miesiąc:'+data.MNTH,
+                    animationSteps : 30,
+                    animationLeftToRight : true,
+                    showYLabels: 2,
+                    scaleGridLineStyle : "longDashShortDash",
+                    scaleGridLineWidth: "0.1",
+                    scaleLineColor: "rgba(151,187,205,1)",
+                    scaleGridLineColor : "rgba(151,187,205,1)",
+                    spaceBottom: 10,
+                    spaceTop: 10
+                    };                    
+                    var c = new Chart(ctx).Line(dt,options);                  
+                    $("#collapseOne").collapse('show');
+                    setTimeout(refresh, 1000);                    
+                    hidePleaseWait();                                                                                                                            
+                  }  
+              } else {                
+                calert("Wystąpił błąd połączenia :" + data.ERROR);
+                $("#collapseZer").collapse('show')
+                hidePleaseWait();
+              }
+              });
+            } else {              
+              calert("Proszę wprowadzić numer pracownika");
+              $("#collapseZer").collapse('show')
+              hidePleaseWait();
+              EMP_NO='';
+            }
+          }                       
+          $( function() {                                       
+            $.datepicker.setDefaults($.datepicker.regional['pl']);              
+            $("#datepicker").datepicker({
+            showOn: "button",
+            buttonImage: "images/favicon.png",
+            buttonImageOnly: true,
+            buttonText: "Wprowadź miesiąc",
+            changeMonth: true,
+            changeYear: true,
+            showButtonPanel: true,
+            minDate: new Date('09/01/2015'),
+            maxDate: new Date(),
+            dateFormat: 'yy/mm',
+            onClose: function(dateText, inst) { 
+                $(this).datepicker('setDate', new Date(inst.selectedYear, inst.selectedMonth, 1));
+            }});                    
+            function setInputDate(_id){
+                var _dat = document.querySelector(_id);
+                var hoy = new Date(),                
+                m = hoy.getMonth()+1, 
+                y = hoy.getFullYear(),
+                data;               
+                if(m < 10){
+                   m = "0"+m;
+                 };  
+              data = y+"/"+m;
+              _dat.value = data;
+              };              
+              setInputDate("#datepicker");
+              change_visib("one",false);              
+              change_visib("two",false);              
+              change_visib("three",false);
+              ko.applyBindings(viewModel);                   
+          });
+    
+          

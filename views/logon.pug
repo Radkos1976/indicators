@@ -1,0 +1,153 @@
+
+extends layout0
+
+block content
+
+ 
+  #dialog-form(title='Logowanie',style="padding: .3em;")
+        p.validateTips(style='border: 1px solid transparent; padding: 0.3em;' ) Proszę o wprowadzenie loginu i hasła
+        form
+          fieldset(style='padding:0; border:0; margin-top:25px;') 
+            label(for="name" ,style='display:block;') Nazwa Użytkownika
+            input#name.text.ui-widget-content.ui-corner-all(type='text', name='name', style='display:block; margin-bottom:12px; width:95%; padding: .4em;')            
+            label(for="password",style='display:block;') Hasło
+            input#password.text.ui-widget-content.ui-corner-all(type="password", name='current-password', style='display:block; margin-bottom:12px; width:95%; padding: .4em;')
+              
+        script(type='text/javascript').
+            
+            
+            $( function() {
+              $( document ).tooltip();
+            });
+            tips = $( ".validateTips" ); 
+            var dialog = $( "#dialog-form" ).dialog({
+              autoOpen: false,
+              height: 400,
+              width: 350,
+              modal: true,
+              buttons: {
+              "Logowanie":login,                
+              Cancel: function() {
+                  dialog.dialog( "close" );
+                }
+              },
+              close: function() {
+                dialog.dialog( "close" );              
+              }
+            });
+            function updateTips( t ) {
+                tips
+                .text( t )
+                .addClass( "ui-state-highlight" );
+                setTimeout(function() {
+                  tips.removeClass( "ui-state-highlight", 1500 );
+                }, 500 );
+              };
+              function login() {
+                var name = $("#name").val();
+                var password = $("#password").val();
+                // zaloguj się do bazy 
+                const clientEphemeral = srp.generateEphemeral(); 
+                try {             
+                  $.post('/secure/client_hello',{username: name,clientEphemeral:clientEphemeral.public})
+                  .done(function(data){
+                  if (data.error!="yes")
+                  {
+                    const privateKey = srp.derivePrivateKey(data.slt, name, password)
+                    const clientSession = srp.deriveSession(clientEphemeral.secret, data.emp, data.slt, name, privateKey)
+                    try {
+                    $.post('/secure/server_hello',{uuid:data.uuid,proof:clientSession.proof})
+                      .done(function(dat){
+                      if (dat.error!="yes")
+                      {
+                        try {
+                          srp.verifySession(clientEphemeral.public, clientSession, dat.proof); 
+                          updateTips('Zalogowano');                     
+                                             
+                          dialog.dialog( "close" );
+                          uuid=data.uuid;
+                          privekey=clientSession.key;
+                          sessionStorage.setItem('name', name);
+                          sessionStorage.setItem('uuid', uuid);
+                          sessionStorage.setItem('privateKey',privekey);                          
+                          sleep(500);
+                          window.location.reload();
+                        } catch (err) {                        
+                          updateTips('Błąd logowania');
+                        }                    
+                      } else {
+                        updateTips('Błąd Logowania ' + dat.msg);
+                        clear_storage();                      
+                      }                    
+                    })
+                    .fail(function(response) {                     
+                       updateTips('Błąd Logowania - Sprawdź poprawność hasła');
+                       clear_storage();                  
+                     })                 
+                   } catch (err) {
+                     updateTips('Błąd Logowania ' + err);
+                     clear_storage();                  
+                   }
+                  } else {
+                    updateTips('Błąd Logowania  - użytkownik nie istnieje :' + data.msg); 
+                    clear_storage();                
+                  }                
+                 })
+                 .fail(function(response) {                
+                    clear_storage();
+                    updateTips('Błąd Logowania - użytkownik nie istnieje');                  
+                  });              
+                } catch (err) {
+                  updateTips('Błąd Logowania ' + err);
+                  clear_storage();                         
+                }           
+              };
+              function set_storage() {
+                uuid=sessionStorage.getItem('uuid');
+                privekey=sessionStorage.getItem('privateKey');
+                if (sessionStorage.getItem('name')==null) {  
+                  $.get('/secure/sess_unsign',function(dat) {});
+                };   
+              }             
+              function clear_storage() {                
+                sessionStorage.removeItem('name');            
+                sessionStorage.removeItem('uuid');
+                sessionStorage.removeItem('privateKey');
+                $.get('/secure/sess_unsign',function(dat) {});
+              };
+              
+              let uuid=sessionStorage.getItem('uuid');
+              let privekey=sessionStorage.getItem('privateKey');
+              var sessionStorage_transfer = function(event) {
+                if(!event) { event = window.event; } // ie suq
+                if(!event.newValue) return;          // do nothing if no value to work with
+                if (event.key == 'getSessionStorage') {
+                  // another tab asked for the sessionStorage -> send it
+                  localStorage.setItem('sessionStorage', JSON.stringify(sessionStorage));
+                  // the other tab should now have it, so we're done with it.
+                  localStorage.removeItem('sessionStorage'); // <- could do short timeout as well.
+                } else if (event.key == 'sessionStorage' && !sessionStorage.length) {
+                  // another tab sent data <- get it
+                  var data = JSON.parse(event.newValue);
+                  for (var key in data) {
+                    sessionStorage.setItem(key, data[key]);
+                  }
+                }
+                setTimeout(set_storage,150);                         
+              };
+              // listen for changes to localStorage
+              if(window.addEventListener) {              
+                window.addEventListener("storage", sessionStorage_transfer, false);
+                } else {
+                  window.attachEvent("onstorage", sessionStorage_transfer);
+                };
+                // Ask other tabs for session storage (this is ONLY to trigger event)
+                if (!sessionStorage.length) {
+                  localStorage.setItem('getSessionStorage', 'foobar');
+                  localStorage.removeItem('getSessionStorage', 'foobar');                
+                };
+                var previous=document.referrer;
+                
+              setTimeout(set_storage,300);
+              dialog.dialog("open");              
+              

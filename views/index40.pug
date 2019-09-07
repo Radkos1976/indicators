@@ -1,0 +1,1206 @@
+﻿extends layout
+
+block content
+  div
+  ul
+    li.dropdown
+      a.dropbtn() Wydział    
+      select#elementId(onchange='updateValues()')        
+          option(disabled='' style="font-size: 16px;font-weight: bold;; background-color: lightblue;") WYDZIAŁ TAPICERNII SITS
+          option(value='400S0') TAPICERNIA
+          option(value='400S1') TAPICERNIA WYKL. PODUSZEK
+          option(value='400S2') TAPICERNIA PRACOWNICY POŚR. PROD.
+          option(value='400S3') ROZLICZENIE TAPICERNI
+          option(disabled='' style="font-size: 16px;font-weight: bold;; background-color: lightblue;") WYDZIAŁ LINII IKEA  
+          option(value='500L0') LINIA PRODUKCYJNA
+          option(value='500L1') NAPEŁNIANIE PODUSZEK
+          option(value='500L2') OPERATORZY LINIA i PRACOWNICY POŚR. PROD.
+          option(value='500L3') ROZLICZENIE LINII IKEA
+          option(value='500L4') LIDER I PRACOWNICY GRUPY WDROŻENIOWEJ                
+          option(disabled='' style="font-size: 16x;font-weight: bold;; background-color: lightblue;")  WYDZIAŁ SZWALNI I KROJOWNI
+          option(value='200S0') SZWALNIA I KROJOWNIA SKÓR
+          option(value='200S1') SZWALNIA I KROJOWNIA TKANIN
+          option(value='200S2') MAGAZYN POSZYĆ i TKANIN
+          option(value='200S3') ROZLICZENIE SZWALNI i KROJOWNI
+          option(disabled='' style="font-size: 16px;font-weight: bold;; background-color: lightblue;") DZIAŁY POMOCNICZE
+          option(value='000M0') MODELARNIA
+          option(value='000M1') DZIAŁ ROZWOJU PRODUKCJI
+          option(value='300M1') DYSPOZYTOR, POMOCNIK DYSPOZYTORA
+          option(value='300M0') MAGAZYN MATERIAŁÓW
+          option(value='600M0') MAGAZYN WYROBÓW GOTOWYCH IKEA
+          option(value='600M1') MAGAZYN WYROBÓW GOTOWYCH SITS              
+    li.dropdown  
+      a.dropbtn() Rodzaj danych
+      select#elementd(onchange='updateValues()') 
+          option(disabled='' style="font-size: 16px;font-weight: bold;; background-color: lightblue;") BIEŻĄCE WYNIKI GRAFICZNIE  
+          option(value=1) DZIENNE
+          option(value=2) TYGODNIOWE
+          option(value=3) MIESIĘCZNE
+          option(disabled='' style="font-size: 16px;font-weight: bold;; background-color: lightblue;") WYSOKOŚĆ PREMII
+          option(value=0) TABELA CELÓW DO PREMII
+          
+              
+    li.dropdown(style="float: right")
+      a.dropbtn() Przełącz na prezentacje dla działów
+      .dropdown-content
+        divider PREZENTACJE DLA PRODUKCJI
+        a(href='AL') Prezentacja celów dla całości Produkcji
+        a(href='400ST') Prezentacja celów Tapicerni
+        a(href='500LI') Prezentacja celów Linia Produkcyjna
+        a(href='200SW') Prezentacja celów Szwalnia
+        divider PREZENTACJE POMOCNICZE 
+        a(href='ALL') Prezentacja celów dla całości Produkcji z działami pomocniczymi
+        divider PLIKI DO POBRANIA
+        a(href='Wyniki_Działy_Produkcyjne.xlsm') Premia w EXCEL
+  canvas#canvas3
+  canvas#canvas4
+  canvas#canvas2
+  canvas#canvas
+  canvas#canvas1
+        script(type='text/javascript').
+          function MainViewModel(data) {                
+            var self = this;
+            var ctx =  $("#canvas").get(0).getContext("2d");    
+            var ctx1 = $("#canvas1").get(0).getContext("2d");
+            var ctx2=  $("#canvas3").get(0).getContext("2d");
+            var ctx3=  $("#canvas4").get(0).getContext("2d");
+            var ctx4=  $("#canvas2").get(0).getContext("2d");
+            self.loadDataset = function(id,refr) {
+            var w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+            var h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+            var mnth=0;
+            var qry=0;
+            qr=IS_one(DEP);
+              if (id==0) {
+                ctx.canvas.width  = 1;
+                ctx.canvas.height = 1;
+                ctx.canvas.style.visibility='hidden';
+ 		 $('canvas').css({ 
+                    width: '',
+                    height: ''
+                  });
+               } else {
+                  $.get("/data/"+id+DEP,function(data) {
+                  if (data.error=="yes") {                
+                    ctx.canvas.width  = 1;
+                    ctx.canvas.height = 1;
+                    ctx.canvas.style.visibility='hidden';
+                  } else {
+                  var options = get_options(data.title,data.subtitle,"Line",0,id);        
+                  ctx.canvas.width  = Math.round(w*0.985);
+                  if (qr==1 && id>1){
+                    ctx.canvas.height = Math.round(h*0.60);
+                  } else {
+                    ctx.canvas.height = Math.round(h*0.30);
+                  }              
+                  ctx.canvas.style.visibility='visible';
+                  if (refr==false) {
+                    var myLine = new Chart(ctx).Line(data,options);
+                  } else {
+                    deleteHighLight(ctx,data);
+                    updateChart(ctx,data,options,true,true);
+                  } 
+                }});
+              }
+            if (id==1||id>1&&qr==1) {
+              ctx1.canvas.width  = 1;
+              ctx1.canvas.height = 1;
+              ctx1.canvas.style.visibility='hidden'
+            } else {
+              if (id==0) {
+                ctx1.canvas.width  = Math.round(w*0.985);
+                ctx1.canvas.height = Math.round(h*0.985);
+                ctx1.canvas.style.visibility='visible';
+                ctx1.font=Math.round(Math.round(h*0.985)*0.055) +'px Arial';
+              $.get("/data/"+(12)+DEP,function(wyniki) {           
+                $.get("/data/"+(4)+DEP, function(dta) {
+                var wyn=[];
+                wyn.push(0);
+                var m=0;
+                for (var i=0; i < dta.table[1].length; i++) {
+                  if (dta.table[dta.table.length-1][i]==wyniki.Wyd) {
+                    m=i;
+                    };
+                  if (dta.table[1][i]==null) {
+                      dta.table[1].splice(i,dta.table[1].length-i);
+                    } else {
+                    dta.table[1][i]=dta.table[1][i]+'%';
+                    };                               
+                  };
+                wyn.push(m);
+                if (qr>1) {
+                m=0;
+                for (var i=0; i < dta.table[2].length; i++) {
+                  if (dta.table[dta.table.length-1][i]==wyniki.five_S) {
+                    m=i;
+                    };
+                    if (dta.table[2][i]==null) {
+                        dta.table[2].splice(i,dta.table[2].length-i);
+                      } else {                  
+                  dta.table[2][i]=dta.table[2][i]+'%';
+                    };
+                  };
+                wyn.push(m);
+                };
+                m=0;
+                if (qr==1) {
+                  var s=2;
+                  var q=wyniki.value;
+                } else {
+                  var s=3;
+                  if (qr==2) {
+                    var q=wyniki.value;
+                  } else {
+                    var q=wyniki.p_BRAK;
+                  }
+                }
+                for (var i=0; i < dta.table[s].length; i++) {
+                  if (dta.table[dta.table.length-1][i]<=q) {
+                    m=i;
+                    };
+                    if (qr==3) {
+                      dta.table[s][i]=dta.table[s][i]+'\u2030';
+                    } else {
+                      dta.table[s][i]=dta.table[s][i]+wyniki.jedn;
+                    }                                 
+                  };
+                wyn.push(m);
+                if (qr>2) {
+                m=0;
+                for (var i=0; i < dta.table[4].length; i++) {
+                  if (dta.table[dta.table.length-1][i]<=wyniki.value) {
+                    m=i;
+                    };
+                    if (dta.table[4][i]==null) {
+                        dta.table[4].splice(i,dta.table[4].length-i);
+                      } else {                  
+                  dta.table[4][i]=dta.table[4][i]+'%';
+                    };
+                  };
+                wyn.push(m);
+                };  
+                var fnt1 = getMetrics("_Wynik_",ctx1.font);
+                var fnt2 = getMetrics("Wydajność",ctx1.font);
+                if (qr==2) {
+                var opt={
+                  context : ctx1,
+                  table : dta.table,
+                  columns : dta.columns,
+                  wynik: wyn,
+                  width : ctx1.canvas.width,
+                  height : ctx1.canvas.height,
+                  colwidth : [fnt1.width*1.2,fnt2.width*1.2,fnt2.width*1.2,fnt2.width*1.2,fnt2.width*1.2],
+                  colheight : fnt1.height*0.8,
+                  tblFNTSIZ : fnt1.height*0.7,
+                  headfntSIZ : fnt1.height*0.8,
+                  waga : dta.waga,
+                  jedn : wyniki.jedn,
+                  wyniki : ['Wynik',wyniki.wydajnosc + '%',wyniki.s + '%',wyniki.value + wyniki.jedn],
+                  title : dta.title,
+                  subtitle : wyniki.subtitle,
+                  fonttitle : 'bold '+ Math.round(fnt1.height) + 'px Arial',
+                  fontsubtitle :'italic '+ Math.round(fnt1.height*0.7)+ 'px Arial',
+                };
+              } else {
+                if (qr==1) {
+                  var opt={
+                    context : ctx1,
+                    table : dta.table,
+                    columns : dta.columns,
+                    wynik: wyn,
+                    width : ctx1.canvas.width,
+                    height : ctx1.canvas.height,
+                    colwidth : [fnt1.width*1.2,fnt2.width*1.2,fnt2.width*1.2,fnt2.width*1.2],
+                    colheight : fnt1.height*0.8,
+                    tblFNTSIZ : fnt1.height*0.7,
+                    headfntSIZ : fnt1.height*0.8,
+                    waga : dta.waga,
+                    jedn : wyniki.jedn,
+                    wyniki : ['Wynik',wyniki.wydajnosc + '%',wyniki.value + wyniki.jedn],
+                    title : dta.title,
+                    subtitle : wyniki.subtitle,
+                    fonttitle : 'bold '+ Math.round(fnt1.height) + 'px Arial',
+                    fontsubtitle :'italic '+ Math.round(fnt1.height*0.7)+ 'px Arial',
+                  };
+                } else {
+                  var opt={
+                    context : ctx1,
+                    table : dta.table,
+                    columns : dta.columns,
+                    wynik: wyn,
+                    width : ctx1.canvas.width,
+                    height : ctx1.canvas.height,
+                    colwidth : [fnt1.width*1.2,fnt2.width*1.2,fnt2.width*1.2,fnt2.width*1.2,fnt2.width*1.2,fnt2.width*1.2],
+                    colheight : fnt1.height*0.8,
+                    tblFNTSIZ : fnt1.height*0.7,
+                    headfntSIZ : fnt1.height*0.8,
+                    waga : dta.waga,
+                    jedn : wyniki.jedn,
+                    wyniki : ['Wynik',wyniki.wydajnosc + '%',wyniki.s + '%',wyniki.braki + '\u2030',wyniki.value + wyniki.jedn],
+                    title : dta.title,
+                    subtitle : wyniki.subtitle,
+                    fonttitle : 'bold '+ Math.round(fnt1.height) + 'px Arial',
+                    fontsubtitle :'italic '+ Math.round(fnt1.height*0.7)+ 'px Arial',
+                  };
+                }
+              }
+                anim=0;
+                var myline=TabANIM(opt);
+              
+              }); 
+              });   
+                } else {                 
+                  $.get("/data/"+(id+4)+DEP, function(data) {
+                    if (data.error=="yes") {                  
+                      ctx1.canvas.width  = 1;
+                      ctx1.canvas.height = 1;
+                      ctx1.canvas.style.visibility='hidden';
+                      } else {
+                    var options = get_options(data.title,data.subtitle,"Bar",0,id);          
+                    ctx1.canvas.width  = Math.round(w*0.985);
+                    ctx1.canvas.height = Math.round(h*0.30);
+                    ctx1.canvas.style.visibility='visible';
+                    anim=1;
+                    for (var i=0; i < data.datasets[0].data.length; i++) {
+                      if (data.datasets[0].data[i]==null) {
+                        data.datasets[0].data[i]=undefined;
+                      };
+                    };
+                    if (refr==false || cont==0) {
+                      var myLine = new Chart(ctx1).Bar(data,options);
+                      } else {
+                      deleteHighLight(ctx1,data);
+                      updateChart(ctx1,data,options,true,true);
+                    }; 
+                  }});
+                };
+              };  
+           
+          if (id==0) {
+            ctx2.canvas.width  = 1;
+            ctx2.canvas.height = 1 ;
+            ctx2.canvas.style.visibility='hidden';
+          } else { 
+            $.get("/data/"+(10)+DEP, function(data) {
+              if (data.error=="yes") {    
+                ctx2.canvas.width  = 1;
+                ctx2.canvas.height = 1;
+                ctx2.canvas.style.visibility='hidden';
+              } else {
+              var dat = pop_Don(data.color,data.value,data.jedn);
+              var options = get_options(data.title,data.subtitle,"Doughnut",[data.value + '%'],0,[0],[48*w/1920-1],["black"]);
+              mnth=data.Mnt;
+              qry=1;
+              if (qr==1) {
+                ctx2.canvas.width  = Math.round(w*0.492);            
+              } else {
+                ctx2.canvas.width  = Math.round(w*0.328);
+              } 
+              if (id==1) {                   
+                ctx2.canvas.height = Math.round(h*0.65);
+                ctx2.canvas.style.visibility='visible';            
+              } else { 
+                ctx2.canvas.height = Math.round(h*0.35);
+                ctx2.canvas.style.visibility='visible';
+              };
+              if (refr==false) {
+                var mydon = new Chart(ctx2).Doughnut(dat,options);
+              } else {
+                deleteHighLight(ctx2,dat);
+                updateChart(ctx2,dat,options,true,true);
+              }; 
+            }});
+          };
+          if (id==0) {
+              ctx3.canvas.width  = 1;
+              ctx3.canvas.height = 1 ;
+              ctx3.canvas.style.visibility='hidden';
+          } else {
+            $.get("/data/"+(12)+DEP, function(data) {
+              if (data.error=="yes") {        
+                ctx3.canvas.width  = 1;
+                ctx3.canvas.height = 1;
+                ctx3.canvas.style.visibility='hidden';
+              } else {
+              var dat = pop_Don(data.color,data.value,data.jedn);
+              if (mnth!=data.Mnt&&qry==1) {
+                var options = get_options(data.title,data.subtitle,"Doughnut",["Poprzedni miesiąc",data.value + data.jedn],0,[30,0],[50*w/1920-1,48*w/1920-1],["lightgrey","black"]);
+              } else {
+                var options = get_options(data.title,data.subtitle,"Doughnut",[data.value + data.jedn],0,[0],[48*w/1920-1],["black"]);
+              };
+              if (qr==1) {
+                ctx3.canvas.width  = Math.round(w*0.492);
+              } else {
+                ctx3.canvas.width  = Math.round(w*0.328);
+              }
+              if (id==1) {              
+                ctx3.canvas.height = Math.round(h*0.65);
+                ctx3.canvas.style.visibility='visible';
+              } else {
+                ctx3.canvas.height = Math.round(h*0.35);
+                ctx3.canvas.style.visibility='visible';
+              };
+              if (refr==false) {
+                var mydon = new Chart(ctx3).Doughnut(dat,options);
+              } else {
+                deleteHighLight(ctx3,dat);
+                updateChart(ctx3,dat,options,true,true);
+              }; 
+            }});
+          };
+          if (id==0 || qr==1) {
+            ctx4.canvas.width  = 1;
+            ctx4.canvas.height = 1 ;
+            ctx4.canvas.style.visibility='hidden';
+          } else {
+            $.get("/data/"+(11)+DEP, function(data) {
+              if (data.error=="yes") {          
+                ctx4.canvas.width  = 1;
+                ctx4.canvas.height = 1;
+                ctx4.canvas.style.visibility='hidden';
+              } else {
+              var dat = pop_Don(data.color,data.value,data.jedn);
+              if (mnth!=data.Mnt&&qry==1) {
+                var options = get_options(data.title,data.subtitle,"Doughnut",["Poprzedni miesiąc",data.value + data.jedn],0,[30,0],[50*w/1920-1,48*w/1920-1],["BurlyWood","black"]);
+              } else {
+                var options = get_options(data.title,data.subtitle,"Doughnut",[data.value + data.jedn],0,[0],[48*w/1920-1],["black"]);
+              };
+              if (id==1) {
+                ctx4.canvas.width  = Math.round(w*0.328);
+                ctx4.canvas.height = Math.round(h*0.65);
+                ctx4.canvas.style.visibility='visible';
+              } else {
+                ctx4.canvas.width  = Math.round(w*0.328);
+                ctx4.canvas.height = Math.round(h*0.35);
+                ctx4.canvas.style.visibility='visible';
+              };
+              if (refr==false) {
+                var mydon = new Chart(ctx4).Doughnut(dat,options);
+              } else {
+                deleteHighLight(ctx4,dat);
+                updateChart(ctx4,dat,options,true,true);
+              };
+            }});
+            };
+          };        
+          };
+          
+            function pop_Don(colMain,alu,jed) {
+                if (jed=='%') {
+                  max=100} else {max=430};
+                
+                if(alu >= max){
+                var dat = [
+                  {
+                    value :alu-max,
+                    color: ["orange"],
+                    title:"Ponad Sto"               
+                  },
+                  {
+                    value : max-(alu-max),
+                    color: [colMain],
+                    title : "WYnik do Stu"                
+                  }];
+                  return dat;
+                }else{
+                  var dat = [
+                    {
+                      value : alu,
+                      color: [colMain],
+                      title : "Wynik"                
+                    },
+                    {
+                      value : max-(alu),
+                      color: "white",
+                      title : "Do stu"                                
+                    }];
+                    return dat;
+                }
+            };
+            
+            function get_options(title,subtitle,type,valu,ch,angl,fntsi,fcol) {
+              var w = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+              var h = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+                var sc=13*w/1920-1;
+                if (ch==2) {
+                  sc=18*w/1920-1
+                    }else if(ch==3) {
+                  sc=16*w/1920-1
+                  };
+                
+                if (type=="Doughnut"){
+                  var options = {
+                  canvasBorders : true,
+                  canvasBordersColor : "rgba(151,187,205,1)",
+                  canvasBordersWidth : 1,
+                  annotateDisplay:true,
+                  dynamicDisplay : false,
+                  graphTitle:title,
+                  graphSubTitle:subtitle,
+                  graphTitleFontSize:24*w/1920-1,
+                  graphSubTitleFontSize:18*w/1920-1,
+                  spaceBottom: 10,
+                  animationSteps : 30,
+                  spaceTop: 10,                            
+                  animation: true,
+                  crossText : valu,
+                  crossTextAngle : angl,
+                  crossTextFontSize : fntsi,
+                  crossTextFontColor: fcol,
+                  crossTextFontStyle : ["bold"],
+                    };
+                    return options;
+                }else if (type=="Bar") {
+                    var options = {
+                  canvasBorders : true,
+                  canvasBordersColor : "rgba(151,187,205,1)",
+                  canvasBordersWidth : 1,
+                  scaleYGridLinesStep: 2,
+                  dynamicDisplay : false,
+                  inGraphDataBackgroundColor:"yellow",
+                  annotateDisplay:true,
+                  animation: true,
+                  animationSteps : 30,
+                  yAxisMinimumInterval : 2,
+                  inGraphDataAlign : "center",
+                  inGraphDataVAlign: "center",
+                  inGraphDataShow : true,
+                  inGraphDataFontSize : 26*w/1920-1,
+                  inGraphDataTmpl : "<%=v3%>%",
+                  inGraphDataFontStyle : "bold",
+                  graphTitle:title,
+                  graphSubTitle:subtitle,
+                  graphTitleFontSize:24*w/1920-1,
+                  graphSubTitleFontSize:18*w/1920-1,
+                  yAxisLabel : "Procent",
+                  yAxisFontSize: 18*w/1920-1,
+                  xAxisFontSize : 25*w/1920-1,
+                  scaleFontSize: sc,
+                  showYLabels: 2,
+                  scaleGridLineStyle : "longDashShortDash",
+                  scaleGridLineWidth: "0.2",
+                  scaleLineColor: "rgba(151,187,205,1)",
+                  scaleGridLineColor : "rgba(151,187,205,1)", 
+                  spaceBottom: 10,
+                  spaceTop: 10, 
+                    };
+                    return options;
+               } else {
+                var options = {
+                canvasBorders : true,
+                canvasBordersColor : "rgba(151,187,205,1)",
+                canvasBordersWidth : 1,      
+                scaleYGridLinesStep: 2,
+                dynamicDisplay : false,
+                annotateDisplay:true,
+                inGraphDataBackgroundColor:"yellow",
+                yAxisMinimumInterval : 2,
+                inGraphDataAlign : "center",
+                inGraphDataShow : true,
+                inGraphDataFontSize : 26*w/1920-1,
+                scaleFontSize: sc,
+                inGraphDataTmpl : "<%=v3%>%",
+                inGraphDatabordercolor: 'yellow',
+                inGraphDataFontStyle : "bold",
+                graphTitle:title,
+                graphTitleFontSize:24*w/1920-1,
+                graphSubTitleFontSize:18*w/1920-1,
+                graphSubTitle:subtitle,
+                animationSteps : 30,
+                animationLeftToRight : true,
+                yAxisLabel : "Procent",
+                yAxisFontSize: 18*w/1920-1,
+                xAxisFontSize : 25*w/1920-1,
+                showYLabels: 2,
+                scaleGridLineStyle : "longDashShortDash",
+                scaleGridLineWidth: "0.2",
+                scaleLineColor: "rgba(151,187,205,1)",
+                scaleGridLineColor : "rgba(151,187,205,1)",
+                spaceBottom: 10,
+                spaceTop: 10,
+                };
+                return options;
+              };      
+            }
+            var e = document.getElementById("elementId");
+            var DEP = e.options[e.selectedIndex].value;
+            var f = document.getElementById("elementd");
+            var set = parseInt(f.options[f.selectedIndex].value);
+            var de=0;
+            var first=0;
+            var txt="200S";
+            var cont=0;
+            var nxt=0;
+            
+            
+            function res(){
+              if (anim==0&&set==0) {
+                anim=1; 
+                sleep(500); 
+              } 
+              vm.loadDataset(set,false);
+            }
+                            
+            function updateValues() {
+            if (anim==0&&set==0) {
+              anim=1;               
+            } 
+            sleep(500); 
+            DEP = e.options[e.selectedIndex].value;
+            set = parseInt(f.options[f.selectedIndex].value);
+            vm.loadDataset(set,true);
+            if (nxt==1) {cont=1};
+            if (set==0) {cont=0}; 
+            if (set==2 && cont==0 && qr>1) {nxt=1};
+            if (set==3 && cont==0 && qr>1) {nxt=1};
+                                 
+            };
+            window.addEventListener('resize', res);
+            var qr=IS_one(DEP)
+            var vm = new MainViewModel();          
+            vm.loadDataset(set,false);
+          
+            var createInterlace = function (size, color1, color2) {
+            	var proto = document.createElement("canvas").getContext("2d");
+            	proto.canvas.width = size * 2;
+            	proto.canvas.height = size * 2;
+            	proto.fillStyle = color1; // top-left
+            	proto.fillRect(0, 0, size, size);
+            	proto.fillStyle = color2; // top-right
+            	proto.fillRect(size, 0, size, size);
+            	proto.fillStyle = color2; // bottom-left
+            	proto.fillRect(0, size, size, size);
+            	proto.fillStyle = color1; // bottom-right
+            	proto.fillRect(size, size, size, size);
+            	var pattern = proto.createPattern(proto.canvas, "repeat");
+            	pattern.data = proto.canvas.toDataURL();
+            	return pattern;
+            };
+            var op_8x8 = createInterlace(1, "#FFF", "#eee");
+            (function() {
+
+            var image = document.createElement("img");
+            
+
+            getMetrics = function(text, font) {
+            	var metrics = document.getElementById("metrics");
+            	if (metrics) {	
+            		metrics.style.cssText = "display: block";
+            		var parent = metrics.firstChild;
+            		parent.firstChild.textContent = text;
+            	} else {
+            		// setting up html used for measuring text-metrics
+            		var parent = document.createElement("span");
+            		parent.appendChild(document.createTextNode(text));
+            		parent.appendChild(image);
+            		var metrics = document.createElement("div");
+            		metrics.id = "metrics";
+            		metrics.appendChild(parent);
+            		document.body.insertBefore(metrics, document.body.firstChild);
+            	}
+            	
+            	// direction of the text
+            	var direction = window.getComputedStyle(document.body, "")["direction"];
+
+            	// getting css equivalent of ctx.measureText()
+            	parent.style.cssText = "font: " + font + "; white-space: nowrap; display: inline;";
+            	var width = parent.offsetWidth;
+            	var height = parent.offsetHeight;
+
+            	// capturing the "top" and "bottom" baseline
+            	parent.style.cssText = "font: " + font + "; white-space: nowrap; display: block;";
+            	var top = image.offsetTop;
+            	var bottom = top - height;
+
+            	// capturing the "middle" baseline
+            	parent.style.cssText = "font: " + font + "; white-space: nowrap; line-height: 0; display: block;";
+            	var middle = image.offsetTop + 1;
+            	
+            	// capturing "1em"
+            	parent.style.cssText = "font: " + font + "; white-space: nowrap; height: 1em; display: block;";
+            	parent.firstChild.textContent = "";
+            	var em = parent.offsetHeight;
+            	
+            	// cleanup
+            	metrics.style.display = "none";
+
+            	return {
+            		direction: direction,
+            		top: top,
+            		em: em,
+            		middle: middle,
+            		bottom: bottom,
+            		height: height,
+            		width: width
+            	};
+            };
+
+            })();
+            var requestAnimFrame = (function() {
+          		return window.requestAnimationFrame ||
+          			window.webkitRequestAnimationFrame ||
+          			window.mozRequestAnimationFrame ||
+          			window.oRequestAnimationFrame ||
+          			window.msRequestAnimationFrame ||
+          			function(callback) {
+          				window.setTimeout(callback, 1000 / 60);
+          			};
+          	})();
+            var anim;
+            var instep=1;
+            function TabANIM(options) {
+              var frame= 200;
+              var tets=[];
+              var sX;
+              var foc=[];
+              var sY;
+              var co=1;
+              var ko=options.table.length;
+                if (anim==0){
+                var szercoltab=0;
+                for (var i=0; i < options.table.length; i++) {
+                  szercoltab=szercoltab+options.colwidth[i];
+                };
+                var margin=(options.width-szercoltab)/2;
+                var szercol=0;
+              var up=Math.round((options.height-((options.table[1].length+8)*options.colheight))/2);
+                
+                for (var i=0; i < options.table.length; i++) {
+                  szercol=szercol+options.colwidth[i];
+                  var maxj=0
+                  for (var j=0; j < options.table[i].length; j++) {
+                      co+=1;
+                      if (co>4) {co=1};
+                      switch(co) {
+                        case 1:
+                          sX=0-(options.colwidth[i]*2);
+                          sY=options.height*Math.random();
+                          break;
+                        case 2:
+                          sX=options.width*Math.random();
+                          sY=0-(options.colheight*2);
+                          break;
+                        case 3:
+                          sX=options.width+options.colwidth[i];
+                          sY=options.height*Math.random();
+                          break;
+                        case 4:
+                          sX=options.width*Math.random();
+                          sY=options.height+options.colheight;
+                          break;
+                        };
+                        if (maxj < j) {maxj=j};
+                        var Wsp = (Math.random()+0.8)*5;
+                        var fil="lightgrey";
+                        var focus=100;
+                        if (j <= options.wynik[i]) {
+                          fil= "rgba(255,165,0,0.8)";
+                          if (j==options.wynik[i] && i<options.table.length-1 && i > 0) {
+                            focus=i;
+                            var tm ={
+                              issue : focus,
+                              rw : options.table[options.table.length-1][j],
+                              issrect:[
+                                [szercol-options.colwidth[i]+margin,options.height-(options.colheight*j+(options.colheight*3))-up,szercoltab-szercol+options.colwidth[i],options.colheight],
+                                [szercol-options.colwidth[i]+margin,options.height-(options.colheight*j+(options.colheight*3))-up,options.colwidth[i],options.colheight*j+(options.colheight*2)],
+                              ],
+                            };
+                            foc.push(tm);
+                            var szercoltab1=options.width-Math.round(options.colwidth[0]*0.6*2)-options.colwidth[0]*0.7-Math.round(options.colwidth[0]/6*2)+margin*0.8;
+                            var tmp = {
+                              text : options.waga[i],
+                              desX : szercoltab1,
+                              desY : options.height-(options.colheight*(5-i)+(options.colheight*14))-up,
+                              desFnt : options.headfntSIZ*0.8,
+                              colH : options.colheight,
+                              colW : options.colwidth[0]*0.6,
+                              stX : szercoltab1,
+                              stY : options.height-(options.colheight*(5-i)+(options.colheight*14))-up,
+                              StFnt : options.headfntSIZ*0.8,
+                              Scale : 1,
+                              fill : "rgba(222,184,135,0.8)",
+                              issue : focus,
+                              type : "A"
+                              };
+                              tets.push(tmp);
+                            var tmp = {
+                              text : "x",
+                              desX : szercoltab1+options.colwidth[0]*0.6,
+                              desY : options.height-(options.colheight*(5-i)+(options.colheight*14))-up,
+                              desFnt : options.headfntSIZ*0.8,
+                              colH : options.colheight,
+                              colW : options.colwidth[0]/6,
+                              stX : szercoltab1+options.colwidth[0]*0.6,
+                              stY : options.height-(options.colheight*(5-i)+(options.colheight*14))-up,
+                              StFnt : options.headfntSIZ*0.8,
+                              Scale : 1,
+                              fill : "yellow",
+                              issue : focus,
+                              type : "A"
+                              };
+                              tets.push(tmp);
+                            var tmp = {
+                              text : options.table[options.table.length-1][j],
+                              desX : szercoltab1+options.colwidth[0]*0.6+options.colwidth[0]/6,
+                              desY : options.height-(options.colheight*(5-i)+(options.colheight*14))-up,
+                              desFnt : options.headfntSIZ*0.8,
+                              colH : options.colheight,
+                              colW : options.colwidth[0]*0.6,
+                              stX : szercoltab1+options.colwidth[0]*0.6+options.colwidth[0]/6,
+                              stY : options.height-(options.colheight*(5-i)+(options.colheight*14))-up,
+                              StFnt : options.headfntSIZ*0.8,
+                              Scale : 1,
+                              fill : "rgba(151,187,205,0.5)",
+                              issue : focus,
+                              type : "A"
+                              };
+                              tets.push(tmp);
+                              var tmp = {
+                                text : "=",
+                                desX : szercoltab1+options.colwidth[0]*0.6*2+options.colwidth[0]/6,
+                                desY : options.height-(options.colheight*(5-i)+(options.colheight*14))-up,
+                                desFnt : options.headfntSIZ*0.8,
+                                colH : options.colheight,
+                                colW : options.colwidth[0]/6,
+                                stX : szercoltab1+options.colwidth[0]*0.6*2+options.colwidth[0]/6,
+                                stY : options.height-(options.colheight*(5-i)+(options.colheight*14))-up,
+                                StFnt : options.headfntSIZ*0.8,
+                                Scale : 1,
+                                fill : "yellow",
+                                issue : focus,
+                                type : "A"
+                                };
+                                tets.push(tmp);
+                                
+                                var tmp = {
+                                  text : options.table[options.table.length-1][j].replace(options.jedn,'')*options.waga[i].substring(0,options.waga[i].length-1)/100 + options.jedn,
+                                  desX : szercoltab1+options.colwidth[0]*0.6*2+options.colwidth[0]/6*2,
+                                  desY : options.height-(options.colheight*(5-i)+(options.colheight*14))-up,
+                                  desFnt : options.headfntSIZ*0.8,
+                                  colH : options.colheight,
+                                  colW : options.colwidth[0]*0.6,
+                                  stX : szercoltab1+options.colwidth[0]*0.6*2+options.colwidth[0]/6*2,
+                                  stY : options.height-(options.colheight*(5-i)+(options.colheight*14))-up,
+                                  StFnt : options.headfntSIZ*0.8,
+                                  Scale : 1,
+                                  fill : "lightblue",
+                                  issue : focus,
+                                  type : "A"
+                                  };
+                                  tets.push(tmp);
+                          } else {
+                            if (j==options.wynik[i] && i==options.table.length-1) {
+                              var tmp = {
+                                text :options.wyniki[i],
+                                desX : szercoltab1+options.colwidth[0]*0.6*2+options.colwidth[0]/6,
+                                desY : options.height-(options.colheight*(5-i)+(options.colheight*14))-up,
+                                desFnt : options.headfntSIZ*0.8,
+                                colH : options.colheight,
+                                colW : options.colwidth[0]*0.6+options.colwidth[0]/6,
+                                stX : szercoltab1+options.colwidth[0]*0.6*2+options.colwidth[0]/6,
+                                stY : options.height-(options.colheight*(5-i)+(options.colheight*14))-up,
+                                StFnt : options.headfntSIZ*0.8,
+                                Scale : 1,
+                                fill : "yellow",
+                                issue : i,
+                                type : "A"
+                                };
+                                tets.push(tmp);
+                                var tmp = {
+                                  text :"SUMA :",
+                                  desX : szercoltab1+options.colwidth[0]*0.6,
+                                  desY : options.height-(options.colheight*(5-i)+(options.colheight*14))-up,
+                                  desFnt : options.headfntSIZ*0.8,
+                                  colH : options.colheight,
+                                  colW : options.colwidth[0]*0.6+options.colwidth[0]/6,
+                                  stX : szercoltab1+options.colwidth[0]*0.6,
+                                  stY : options.height-(options.colheight*(5-i)+(options.colheight*14))-up,
+                                  StFnt : options.headfntSIZ*0.8,
+                                  Scale : 1,
+                                  fill : "yellow",
+                                  issue : i,
+                                  type : "A"
+                                  };
+                                  tets.push(tmp);
+                            }
+                          };
+                        } else {
+                          fil= "rgba(151,187,205,0.5)";
+                        };
+                        if (i==0) {
+                        fil= "rgba(148, 176, 76, 0.9)";
+                        };
+                        if (i==options.table.length-1) {
+                          focus=101;
+                          if (j <= options.wynik[i]) {
+                            var kolor="rgba(255,255,0,0.8)";
+                            if (j == options.wynik[i]) {
+                              var tmp = {
+                                text : "WYNIK:"+options.wyniki[i],
+                                desX : options.width-options.colwidth[0]*2+margin*0.8,
+                                desY : options.height-(options.colheight*3)-up,
+                                desFnt : options.headfntSIZ,
+                                colH : options.colheight*2,
+                                colW : options.colwidth[0]*2,
+                                stX : options.width-options.colwidth[0]*2+margin*0.8,
+                                stY : options.height-(options.colheight*3)-up,
+                                StFnt : options.headfntSIZ*1.2,
+                                Scale : 1,
+                                fill : kolor,
+                                issue : i,
+                                type : "A"
+                                };
+                                tets.push(tmp);
+                            };
+                          } else {
+                            var kolor="lightblue";
+                          };
+                          if (j != 0) {
+                          var tmp = {
+                            text :"",
+                            desX : szercoltab+margin+margin*0.1,
+                            desY : options.height-(options.colheight*j+(options.colheight*3))-up,
+                            desFnt : options.headfntSIZ,
+                            colH : options.colheight*0.75,
+                            colW : (options.width+margin*0.9-(szercoltab+margin+margin*0.2))*0.5*(parseInt(options.table[i][j].replace('%',''))/200),
+                            stX : szercoltab+margin+margin*0.1,
+                            stY : options.height-(options.colheight*j+(options.colheight*3))-up,
+                            StFnt : options.headfntSIZ,
+                            Scale : 1,
+                            fill : kolor,
+                            issue : i,
+                            type : "A"
+                            };
+                            tets.push(tmp);
+                          };
+                        };
+            
+                    var tmp = {
+                      text : options.table[i][j],
+                      desX : szercol-options.colwidth[i]+margin,
+                      desY : options.height-(options.colheight*j+(options.colheight*3))-up,
+                      desFnt : options.tblFNTSIZ,
+                      colH : options.colheight,
+                      colW : options.colwidth[i],
+                      stX : sX,
+                      stY : sY,
+                      StFnt : options.tblFNTSIZ*Wsp,
+                      Scale : Wsp,
+                      fill : fil,
+                      issue : focus,
+                      type : "D"
+                      };
+                      tets.push(tmp);
+                    };
+                  };
+                  szercol=0;
+                  for (var i=0; i < options.columns.length; i++) {
+                    co+=1;
+                    if (co>4) {co=1};
+                    switch(co) {
+                      case 1:
+                        sX=0-(options.colwidth[i]*2);
+                        sY=options.height*Math.random();
+                        break;
+                      case 2:
+                        sX=options.width*Math.random();
+                        sY=0-(options.colheight*2);
+                        break;
+                      case 3:
+                        sX=options.width+options.colwidth[i];
+                        sY=options.height*Math.random();
+                        break;
+                      case 4:
+                        sX=options.width*Math.random();
+                        sY=options.height+options.colheight;
+                        break;
+                      };
+                    szercol=szercol+options.colwidth[i];
+                    var tmp = {
+                      text : options.columns[i],
+                      desX : szercol-options.colwidth[i]+margin,
+                      desY : options.height-(options.colheight*(maxj+1)+(options.colheight*3))-up,
+                      desFnt : options.headfntSIZ,
+                      colH : options.colheight,
+                      colW : options.colwidth[i],
+                      stX : sX,
+                      stY : sY,
+                      StFnt : options.headfntSIZ*Wsp,
+                      Scale : Wsp,
+                      fill : "rgba(255, 79, 48, 0.5)",
+                      issue : 100,
+                      type : "C"
+                      };
+                      tets.push(tmp);
+                  };
+                  szercol=0;
+                  for (var i=0; i < options.wyniki.length; i++) {
+                    var kol=100;
+                    if (i>0 && i<options.wyniki.length-1) {kol=i};
+                    co+=1;
+                    if (co>4) {co=1};
+                    switch(co) {
+                      case 1:
+                        sX=0-(options.colwidth[i]*2);
+                        sY=options.height*Math.random();
+                        break;
+                      case 2:
+                        sX=options.width*Math.random();
+                        sY=0-(options.colheight*2);
+                        break;
+                      case 3:
+                        sX=options.width+options.colwidth[i];
+                        sY=options.height*Math.random();
+                        break;
+                      case 4:
+                        sX=options.width*Math.random();
+                        sY=options.height+options.colheight;
+                        break;
+                      };
+                    szercol=szercol+options.colwidth[i];
+                    var tmp = {
+                      text : options.wyniki[i],
+                      desX : szercol-options.colwidth[i]+margin,
+                      desY : options.height-(options.colheight*(maxj+2)+(options.colheight*3))-(options.colheight/2)-up,
+                      desFnt : Math.round(options.headfntSIZ*1.3),
+                      colH : options.colheight*1.3,
+                      colW : options.colwidth[i],
+                      stX : sX,
+                      stY : sY,
+                      StFnt : options.headfntSIZ*Wsp,
+                      Scale : Wsp,
+                      fill : "rgba(255,255,0,0.8)",
+                      issue : kol,
+                      type : "R"
+                      };
+                      tets.push(tmp);
+                  };
+                  szercol=0;
+                  for (var i=0; i < options.waga.length; i++) {
+                    var kol=100;
+                    if (i>0 ) {kol=i};
+                    co+=1;
+                    if (co>4) {co=1};
+                    switch(co) {
+                      case 1:
+                        sX=0-(options.colwidth[i]*2);
+                        sY=options.height*Math.random();
+                        break;
+                      case 2:
+                        sX=options.width*Math.random();
+                        sY=0-(options.colheight*2);
+                        break;
+                      case 3:
+                        sX=options.width+options.colwidth[i];
+                        sY=options.height*Math.random();
+                        break;
+                      case 4:
+                        sX=options.width*Math.random();
+                        sY=options.height+options.colheight;
+                        break;
+                      };
+                    szercol=szercol+options.colwidth[i];
+                    var tmp = {
+                      text : options.waga[i],
+                      desX : szercol-options.colwidth[i]+margin,
+                      desY : options.height-(options.colheight*2)-up,
+                      desFnt : options.headfntSIZ,
+                      colH : options.colheight,
+                      colW : options.colwidth[i],
+                      stX : sX,
+                      stY : sY,
+                      StFnt : options.headfntSIZ*Wsp,
+                      Scale : Wsp,
+                      fill : "rgba(222,184,135,0.8)",
+                      issue : kol,
+                      type : "V"
+                      };
+                      tets.push(tmp);
+                  };
+                  var maxfoc=foc.length-1;
+                }
+            
+              function PLoop () {
+                if (anim==0) {
+                  requestAnimFrame(PLoop);
+                    tabl.update();
+                    tabl.render();
+                    
+                } else {
+                  tabl.tets=null;
+                tabl=null;  
+                window.cancelAnimationFrame;
+                }
+              };
+              function AnimTab (context,txts,width,height,se) {
+                var step = 0;
+                var wait=0;
+                var maxstep=15;
+                var that = {};
+                that.context = context;
+                that.texts= txts;
+                that.se=se;
+                that.width=width;
+                that.height=height;
+                that.render = function () {
+                  var doo=0;
+                  var l=1;
+                  if (wait > maxstep) {l=2};
+                  if (Math.round((step+wait)/(instep*l))==(step+wait)/(instep*l)) {doo=1};
+                  if (doo==1) {
+                  var d=new Date();
+                  var ST=d.getTime();
+                  that.context.save();
+                  that.context.clearRect(0, 0, width,height);
+                  var offset=0;
+                  var ani=0;
+                  var animstep=0;
+                  var lastcol=0;
+                  var addtbl=0;
+                  if (wait > maxstep && ko<4) {anim=1};
+                  if (wait > maxstep+100 && ko>3) {
+                      if (wait>(maxstep+100)*1.2) {
+                          offset=that.se.margin*0.9;
+                          that.context.fillStyle="red";
+                          for (var i=0; i < foc.length; i++) {
+                            if (wait>(maxstep+100)*(foc[i].issue+1) && wait<(maxstep+100)*(foc[i].issue+2)) {
+                              ani=foc[i].issue;
+                              that.context.fillRect(foc[i].issrect[0][0]-offset,foc[i].issrect[0][1],foc[i].issrect[0][2],foc[i].issrect[0][3]);
+                              that.context.fillRect(foc[i].issrect[1][0]-offset,foc[i].issrect[1][1],foc[i].issrect[1][2],foc[i].issrect[1][3]);
+                              lastcol=foc[i].rw;
+                          } else {
+                            if (wait>=(maxstep+100)*(foc[foc.length-1].issue+2))
+                            {
+                              ani=foc[foc.length-1].issue+1;
+                            };
+                          };
+                        };
+                        if (wait>(maxstep+100)*(maxfoc+3)) {anim=1};
+                      } else {
+                          offset=that.se.margin*0.9-((maxstep+100)*1.2-wait)/((maxstep+100)/2)*that.se.margin*0.9;
+                      };
+                  };
+                    that.context.lineWidth=3;
+                    var txt;
+                    for (var i = 0; i < that.texts.length; i++) {
+                          txt = that.texts[i];
+                          if (txt.type=="A" && ani >= txt.issue || txt.type!="A") {
+                            if (txt.type=="A" && ani == txt.issue) {
+                              step=wait-((maxstep+100)*ani+1);
+                            };
+                            var fntscale=1;
+                            var fn = "normal"
+                            if (ani>0) {
+                            if (txt.issue==ani && wait<(maxstep+100)*(maxfoc+3) ) {
+                              fntscale=2;
+                              that.context.fillStyle="red";
+                            } else {
+                              if (txt.issue==101) {
+                                if (lastcol==txt.text){
+                                  fntscale=2;
+                                  that.context.fillStyle="red";
+                                } else {
+                                  that.context.fillStyle = txt.fill;
+                                };
+                              } else {
+                              that.context.fillStyle = txt.fill;
+                              };
+                            };
+                          } else {
+                            that.context.fillStyle = txt.fill;
+                          };
+                          that.context.beginPath();
+                          if (txt.fill=="rgba(255,165,0,0.8)") {fn = "bold"};
+                          if (txt.fill=="rgba(222,184,135,0.8)" || txt.fill=="rgba(255,255,0,0.8)" || txt.fill=="rgba(255, 79, 48, 0.5)" || txt.fill=="yellow"|| fntscale==2) {fn = "bold italic small-caps "};
+                            that.context.font =fn+' '+ Math.round(txt.desFnt+(txt.StFnt-txt.desFnt)*(1-step/maxstep)*fntscale)  +'px Arial';
+                            var dim = getMetrics(txt.text,that.context.font);
+                            var offsetH=(txt.colH+(txt.colH*txt.Scale-txt.colH)*(1-step/maxstep)*fntscale-dim.height)/2;
+                            var offsetW=(txt.colW+(txt.colW*txt.Scale-txt.colW)*(1-step/maxstep)*fntscale-dim.width)/2;
+                            that.context.fillRect(txt.desX+(txt.desX-txt.stX)*(1-step/maxstep)*fntscale-offset,txt.desY+(txt.desY-txt.stY)*(1-step/maxstep)*fntscale,txt.colW+(txt.colW*txt.Scale-txt.colW)*(1-step/maxstep)*fntscale,txt.colH+(txt.colH*txt.Scale-txt.colH)*(1-step/maxstep)*fntscale);
+                            that.context.strokeStyle = "rgba(151,187,205,1)";
+                            that.context.rect(txt.desX+(txt.desX-txt.stX)*(1-step/maxstep)*fntscale-offset,txt.desY+(txt.desY-txt.stY)*(1-step/maxstep)*fntscale,txt.colW+(txt.colW*txt.Scale-txt.colW)*(1-step/maxstep)*fntscale,txt.colH+(txt.colH*txt.Scale-txt.colH)*(1-step/maxstep)*fntscale);
+                            that.context.stroke();
+                            that.context.textBaseline="top";
+                            if (fntscale==2) {
+                              that.context.fillStyle="white";
+                            } else {
+                            that.context.fillStyle = "#666";
+                          };
+                            that.context.fillText(txt.text, txt.desX+(txt.desX-txt.stX)*(1-step/maxstep)*fntscale+offsetW-offset, txt.desY+(txt.desY-txt.stY)*(1-step/maxstep)*fntscale+offsetH);
+                            if (txt.type=="A" && ani == txt.issue) {
+                              step=maxstep;
+                            };
+                            that.context.closePath();
+                          };
+                          txt=null;
+                      };
+                      
+                        that.context.beginPath();
+                        that.context.font =that.se.fonttitle;
+                        var dim = getMetrics(that.se.title,that.context.font);
+                        that.context.textBaseline="top";
+                        that.context.fillStyle = "#666";
+                        var off1=0;
+                        if (offset!=0) {
+                          off1=offset/(that.se.margin*0.9)*(that.width-dim.width)/2;
+                        };
+                        that.context.fillText(that.se.title,(that.width-dim.width)/2-off1, dim.height/4);
+                        that.context.font =that.se.fontsubtitle;
+                        var dim1 = getMetrics(that.se.subtitle,that.context.font);
+                        var off2=0;
+                        if (offset!=0) {
+                          off2=offset/(that.se.margin*0.9)*(that.width-dim1.width)/2;
+                        };
+                        that.context.textBaseline="top";
+                        that.context.fillStyle = "#666";
+                        that.context.fillText(that.se.subtitle,(that.width-dim1.width)/2-off2, dim.height*1.25);
+                  that.context.lineWidth=1;
+                  that.context.rect(0,0,width,height);
+                  that.context.stroke();
+                  that.context.restore();
+                  that.context.closePath();
+                  var e=new Date();
+                  instep=Math.round((maxstep*((e.getTime()-ST)/1000))/0.5);
+                  };
+                };
+                that.update = function () {
+                    step +=1;
+                    if (step > maxstep) {
+                      wait +=1;
+                      step=maxstep;
+                      if (wait > maxstep*100) {
+                      anim=0;
+                  
+                      }
+                    };
+                };
+                return that;
+             };
+             if (anim==0){
+             var sett = {
+               title: options.title,
+               subtitle : options.subtitle,
+               fonttitle : options.fonttitle,
+               fontsubtitle :options.fontsubtitle,
+               margin : margin,
+             };
+             var tabl= AnimTab(options.context,tets,options.width,options.height,sett);
+             PLoop();
+            } else {
+              window.cancelAnimationFrame;
+            }
+            };
+            function IS_one (depar) {
+              var ar=';300M1;000M1;200S3;500L4;500L3;400S3;600W0;100K0;000M0';
+              if (ar.indexOf(depar)!=-1) {
+                return 1;
+              } else {
+                var as =';600M1;600M0;300M0';
+                if (as.indexOf(depar)!=-1) {
+                  return 3;
+              } else {
+                return 2;
+              };
+            };
+            }
+            

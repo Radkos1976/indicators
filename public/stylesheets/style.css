@@ -1,0 +1,51 @@
+body {
+  overflow: hidden;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+  color: #00B7FF;
+}
+canvas {
+ height: auto;
+}
+ul.a {
+list-style-type: none;
+margin: 0;
+padding: 0;
+overflow: hidden;
+background-color: grey;
+}
+li.dropdown {
+float: left;
+}
+li a,select, .dropbtn {
+
+color: white;
+text-align: center;
+padding: 2px;
+text-decoration: none;
+}
+li a:hover, .dropdown:hover .dropbtn {
+background-color: lightblue;
+}
+option,.dropdown-content {
+display: none;
+position: absolute;
+min-width: 140px;
+background-color: #f9f9f9;
+box-shadow: 0px 18px 14px 0px rgba(0,0,0,0.2);
+}
+option,.dropdown-content a {
+color: black;
+padding: 2px;
+text-decoration: none;
+display: block;
+text-align: center;
+}
+select,.dropdown-content a:hover {
+  background-color: red;
+  color: white;
+  text-align: center;
+}
+.dropdown:hover .dropdown-content {
+display: block;
+}
+.ui-menu { width: 15%; min-width:150px}

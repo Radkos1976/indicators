@@ -1,0 +1,116 @@
+.panel-heading a:after {
+    font-family:'Glyphicons Halflings';
+    content:"\e114";
+    float: right;
+    color: grey;
+}
+.panel-heading a.collapsed:after {
+    content:"\e080";
+}
+.ui-datepicker-calendar {
+    display: none;
+    }
+#one, #two, #three {
+  display:block;
+}
+#ontop {
+  position: absolute;
+  top: 5px;
+  right: 0px
+}
+canvas {
+ height: auto;
+ width: 100%;
+}
+.table-fixed thead {
+  width: 97%;
+}
+.table-fixed th.Nr, th.Punkty {
+  width: 8%;
+}
+.table-fixed tbody {
+overflow-y: scroll;
+ height: 65%;            //  <-- Select the height of the body
+ width: 100%;
+ position: absolute;
+}
+.table-fixed tr {
+width: 100%;
+display: inline-table;
+table-layout: fixed;
+cursor: pointer;
+}
+.table-fixed tr:hover{
+  border: 2px solid blue;
+}
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+.modal-dialog { position: absolute; left: 0; right: 0; top: 0; bottom: 0; margin: auto; width: 500px; height: 300px; }
+.modal-dialog-centered{ position: absolute; left: 0; right: 0; top: 0; bottom: 0; margin: auto;}
+
+.table-bordered thead {
+  width: 97%;
+}
+.table-bordered tr  {
+  display: inline-table;
+  table-layout: fixed;
+  cursor: pointer;
+}
+.table-bordered tbody {
+
+ overflow-y: scroll;
+ overflow-x: hidden;
+ height:65%;            //  <-- Select the height of the body
+ width: 97%;
+ position: absolute;
+}
+
+.table-bordered tr:hover{
+  border: 2px solid blue;
+}
+.sticky :hover{
+  position: -webkit-sticky;
+  position: sticky;
+  top: 0;
+  padding: 5px;
+  background-color: #cae8ca;
+  border: 2px solid #4CAF50;
+}
+label {
+    display: inline-block; width: 5em;
+  }
+.desc {
+  	background: url(../images/desc.png) top right no-repeat;
+  }
+.asc {
+  	background: url(../images/asc.png) top right no-repeat;
+  }
+.filter {
+   	background: url(../images/filter.png) bottom right no-repeat;
+}
+.glyphicon-refresh-animate {
+    -animation: spin .7s infinite linear;
+    -webkit-animation: spin2 .7s infinite linear;
+}
+.selected {
+    font: italic bold 16px/30px Georgia, serif;
+    border: 3px solid #4CAF50;
+}
+@-webkit-keyframes spin2 {
+    from { -webkit-transform: rotate(0deg);}
+    to { -webkit-transform: rotate(360deg);}
+}
+
+@keyframes spin {
+    from { transform: scale(1) rotate(0deg);}
+    to { transform: scale(1) rotate(360deg);}
+}
+.che{
+  margin: 20px;
+}
+input:focus {
+    background-color: yellow;
+}

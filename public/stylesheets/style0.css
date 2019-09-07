@@ -1,0 +1,41 @@
+body {
+  padding: 1%;
+  font: 14px "Lucida Grande", Helvetica, Arial, sans-serif;
+}
+canvas{position: relative;}
+a {
+  color: #00B7FF;
+}
+#canvas1{animation: imageAnimation 180s linear infinite 0s;}
+@-webkit-keyframes imageAnimation {
+	0% {
+	  opacity: 0;
+	-webkit-transform: scale(1.00);
+	}
+	1% {
+    top: 500px;
+	     opacity: 1;
+	}
+	7% {
+	     opacity: 1;
+
+
+			}
+	7.3% {
+	    opacity: 1;
+
+	}
+	25.1% {
+	    opacity: 1;
+
+	}
+	25.3% {
+	    opacity: 1;
+
+	}
+	90% {
+	     opacity: 1;
+	}
+	100% { opacity: 0;
+	 translateZ(0);}
+}
